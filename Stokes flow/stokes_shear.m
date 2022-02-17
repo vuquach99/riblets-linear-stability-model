@@ -10,7 +10,7 @@ close all
 tic
 
 %% Input data
-% Sides of the domain
+% Sides of the periodic-in-z domain
 a = 2; % aspect ratio ly:lz
 lz = 1;
 ly = a*lz;

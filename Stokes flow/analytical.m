@@ -10,14 +10,14 @@ close all
 tic
 
 %% Input data
-% Sides of the domain
+% Sides of the non-periodic-in-z domain
 ly = 0.5; 
 lz = 1;
 error_hist = [];
 n_hist = [];
 
 % Define grid sizes
-for n = 10:110
+for n = 5:1:30
     n_hist(end+1) = n;
     ny = n; % number of points y (wall-normal) domain is enclosed
     nz = 2*n; % number of points in z (spanwise) % periodic in z-direction
@@ -241,13 +241,11 @@ for n = 10:110
     umaxmax=max(max(u));
 
     %% Verify
-    for k = 1:nz
-        Sxtot(k) = (u(ny,k)-u(ny-1,k))/dy;
-    end
-    Sxtotm = mean(Sxtot);
-    error = (abs(lz^2/4 - max(u(:))*4)
+    error = (abs(lz^2/4 - max(u(:))*4))*100/(lz^2/4) % percentage error
     error_hist(end+1) = error;
 end
 figure
 semilogy(n_hist, error_hist)
+ylabel('Percentage error')
+xlabel('Number or points in y')
 toc

@@ -16,7 +16,8 @@ lz = 1;
 
 % Define grid sizes
 ny = 30; % number of points y (wall-normal) domain is enclosed
-nz = 60; % number of points in z (spanwise) % periodic in z-direction
+nz_periodic = 60; % number of points in z as in a periodic domain
+nz = nz_periodic+1; % number of points in z (spanwise)
 dy = ly/(ny-1); % length of sub-intervals in y-axis
 dz = lz/(nz-1); % length of sub-intervals in z-axis
 z = linspace(0,lz,nz);
