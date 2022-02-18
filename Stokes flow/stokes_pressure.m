@@ -10,14 +10,15 @@ close all
 tic
 
 %% Input data
-% Sides of the domain
-ly = 0.5; 
+% Sides of the non-periodic-in-z domain
+a = 0.5; % aspect ratio ly:lz
 lz = 1;
+ly = a*lz;
 
 % Define grid sizes
-ny = 30; % number of points y (wall-normal) domain is enclosed
-nz_periodic = 60; % number of points in z as in a periodic domain
-nz = nz_periodic+1; % number of points in z (spanwise)
+n = 50;
+nz = 2*n+1; % number of points in non-periodic z (spanwise)
+ny = a*(nz-1); % number of points y (wall-normal) domain is enclosed
 dy = ly/(ny-1); % length of sub-intervals in y-axis
 dz = lz/(nz-1); % length of sub-intervals in z-axis
 z = linspace(0,lz,nz);
@@ -26,9 +27,9 @@ y = linspace(0,ly,ny);
 dpdx = -1; % Pressure gradient
 Sx = 0; % Shear at the top, could set to 1 (if normalised, always 1)
 
-geometry = 2;
+geometry = 1;
 % 0 = parabola, 1 = triangle, 2 = semi-circle
-% 3 = trapezium, 4 = blades, 5 = ellipse
+% 3 = trapezium, 4 = blades
 
 savefile = 0;
 
@@ -51,7 +52,6 @@ end
 
 if geometry == 1 % triangle
     shape = 'triangle';
-    z = linspace(0,1,nz);
     triangle = (z-lz/2);%+1+0.5*z)+0.5*lz;
     triangle2 = -z+lz/2;
     % triangle = (2*z-lz/2);%+1+0.5*z)+0.5*lz;
@@ -348,25 +348,30 @@ end
 figure
 spy(A)
 u = reshape(mldivide(A,P),ny,nz);
-Ub = mean(mean(u));
+if size(u,1) > n
+    u_g = u(1:n,:); % velocity profile in groove
+    n1 = n; % index for plotting
+else
+    u_g = u;
+    n1 = size(u,1);
+end
 u_max = full(max(u(:)));
 if dpdx == -1 && Sx == 0 && geometry == 2
     fprintf('4*u_max = %f\n', u_max*4)
 else
     fprintf('u_max = %f\n', u_max)
 end
-% Lws=Ub/s;
 figure
 surfc(z,y,u)
-% daspect([1 1 1])
-% axis tight
-% axis fill
-% axis image
+title('u profile')
+axis image
 ylabel('y', 'FontSize', 18)
 xlabel('z', 'FontSize', 18)
 set(gca,'FontSize',18)
-% us = [zeros(1,nz); u];
-us = [u(:,end) u];
+
+figure
+surfc(z,y(1:n1),u_g)
+title('u profile in groove')
 
 %% Analytical solution for semi-circlular riblets
 % Used to validate results

@@ -16,8 +16,8 @@ lz = 1;
 ly = a*lz;
 
 % Define grid sizes
-n = 25;
-nz = 2*n; % number of points in z (spanwise) % periodic in z-direction
+n = 50;
+nz = 2*n; % number of points in periodic z (spanwise)
 ny = a*nz; % number of points y (wall-normal) domain is enclosed
 dy = ly/(ny-1); % length of sub-intervals in y-axis
 dz = lz/nz; % length of sub-intervals in z-axis
@@ -27,7 +27,12 @@ y = linspace(0,ly,ny);
 dpdx = 0; % Pressure gradient
 Sx = 1; % Shear at the top, could set to 1 (if normalised, always 1)
 
-geometry = 2; % 0 = parabola, 1 = triangle, 2 = semi-circle
+geometry = 1; 
+% 0 = parabola 
+% 1 = triangle (k/s = 1.866 for 30deg, 0.5 for 90deg, 0.866 for 60deg)
+% 2 = semi-circle (k/s = 0.5)
+
+angle = 90; % 30/60/90 degrees, for triangles only
 savefile = 0;
 
 %% Build S matrix - Grid Points of riblets
@@ -48,20 +53,30 @@ if geometry == 0 % parabola
 end
 
 if geometry == 1 % triangle
-    shape = 'triangle';
-    triangle = (z-lz/2);%+1+0.5*z)+0.5*lz;
-    triangle2 = -z+lz/2;
-    % triangle = (2*z-lz/2);%+1+0.5*z)+0.5*lz;
-    % triangle2 = -2*z+lz/2;
-    for k = 1:nz
-        for j = 1:ny
-            if y(j)<=triangle(k) || y(j)<=triangle2(k)
-                S(j,k) = 1;
-            else
-                S(j,k) = 0;
+    if angle == 90        
+        shape = 'triangle9';
+        triangle = z-lz/2;
+        triangle2 = -z+lz/2;
+    end
+    if angle == 60
+        shape = 'triangle6';
+        triangle = sqrt(3)*z-sqrt(3)*lz/2;
+        triangle2 = -sqrt(3)*z+sqrt(3)*lz/2;
+    end
+    if angle == 30
+        shape = 'triangle3';
+        triangle = (2+sqrt(3))*z-1-sqrt(3)*lz/2;
+        triangle2 = -(2+sqrt(3))*z+1+sqrt(3)*lz/2;
+    end
+        for k = 1:nz
+            for j = 1:ny
+                if y(j)<=triangle(k) || y(j)<=triangle2(k)
+                    S(j,k) = 1;
+                else
+                    S(j,k) = 0;
+                end
             end
         end
-    end
 end
 
 if geometry == 2 % semi-circle
@@ -99,8 +114,18 @@ if geometry == 0 % parabola
 end
 
 if geometry == 1 % triangle
-    triangle = (z-lz/2)+dy;%+1+0.5*z)+0.5*lz;
-    triangle2 = -z+lz/2+dy;
+    if angle == 90
+        triangle = z-lz/2+dy;
+        triangle2 = -z+lz/2+dy;
+    end
+    if angle == 60
+        triangle = sqrt(3)*z-sqrt(3)*lz/2+dy;
+        triangle2 = -sqrt(3)*z+sqrt(3)*lz/2+dy;
+    end
+    if angle == 30
+        triangle = (2+sqrt(3))*z-1-sqrt(3)*lz/2+dy;
+        triangle2 = -(2+sqrt(3))*z+1+sqrt(3)*lz/2+dy;
+    end
     for k = 1:nz
         for j = 1:ny
             if y(j)<triangle(k) || y(j)<triangle2(k)
@@ -191,11 +216,11 @@ for j=1:ny
             y0 = (j-ny)*dy;
             z0 = k*dz ;          
             my = abs(floor(log10(dy)));
-            mz = abs(floor(log10(dz)));
-            
-        %ys: (j-+2,k);(j-+1,k);(j,k-+2);(j,k-+1) 
+            mz = abs(floor(log10(dz)));            
+            % ys: (j-+2,k);(j-+1,k);(j,k-+2);(j,k-+1) 
             ys=[y0-dy, y0, y0+dy];
-            zs=[z0-dz, z0, z0+dz];  
+            zs=[z0-dz, z0, z0+dz];
+            
             if geometry == 0 % parabola
                 yp0 = (2*(z0-lz/2)).^2;
                 zpPlus = sqrt(y0)/2+lz/2;
@@ -203,13 +228,24 @@ for j=1:ny
             end
             
             if geometry == 1 % triangle
-                if z0 <= lz/2
-                    yp0 = z0 - lz/2;
-                else
-                    yp0 = -z0+lz/2;
+                if angle == 90
+                    if z0 <= lz/2
+                        yp0 = z0 - lz/2;
+                    else
+                        yp0 = -z0 + lz/2;
+                    end
+                    zpPlus = lz/2 - y0;
+                    zpMinus = y0 + lz/2;
                 end
-                zpPlus = lz/2 - y0;
-                zpMinus = y0 + lz/2;
+                if angle == 60
+                    if z0 <= lz/2
+                        yp0 = sqrt(3)*z0-sqrt(3)*lz/2;
+                    else
+                        yp0 = -sqrt(3)*z0+sqrt(3)*lz/2;
+                    end
+                    zpPlus = lz/2 - y0;
+                    zpMinus = y0 + lz/2;
+                end
             end
             
             if geometry == 2 % semi-circle
@@ -219,7 +255,7 @@ for j=1:ny
             end
             
             % check closest distance in z direction               
-            if abs(z0-zpPlus) < abs(z0 - zpMinus)
+            if abs(z0-zpPlus) < abs(z0-zpMinus)
                 zp0 = zpPlus;
             else
                 zp0 = zpMinus;
@@ -297,26 +333,26 @@ end
 figure
 spy(A)
 u = reshape(mldivide(A,P),ny,nz);
-Ub = mean(mean(u));
-u_g = u(1:n,:); % velocity profile in groove
+if size(u,1) > n
+    u_g = u(1:n,:); % velocity profile in groove
+    n1 = n; % index for plotting
+else
+    u_g = u;
+    n1 = size(u,1);
+end
 u_max = full(max(u_g(:)));
 fprintf('u_max = %f\n', u_max)
-% Lws=Ub/s;
 figure
 surfc(z,y,u)
 title('u profile')
-% daspect([1 1 1])
-% axis tight
-% axis fill
 axis image
 ylabel('y', 'FontSize', 18)
 xlabel('z', 'FontSize', 18)
 set(gca,'FontSize',18)
+
 figure
-surfc(z,y(1:n),u_g)
+surfc(z,y(1:n1),u_g)
 title('u profile in groove')
-% us = [zeros(1,nz); u];
-us = [u(:,end) u];
 
 %% Verify
 for k = 1:nz
@@ -334,9 +370,9 @@ for i = 1:ny-1
 end
 grad(ny) = grad(ny-1);
 [grad_min, min] = min(grad);
-origin = y(min)-grad_min*ums(min);
-y_line = grad_min*ums + origin;
-fprintf('Virtual origin at y = %f\n', origin)
+boundary = y(min)-grad_min*ums(min);
+y_line = grad_min*ums + boundary;
+fprintf('Virtual boundary at y = %f\n', boundary)
 
 figure
 hold on

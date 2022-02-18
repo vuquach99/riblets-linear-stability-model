@@ -29,7 +29,7 @@ y = linspace(0,ly,ny);
 dpdx = -1; % Pressure gradient
 Sx = 0; % Shear at the top, could set to 1 (if normalised, always 1)
 
-geometry = 2; % 0 = parabola, 1 = triangle, 2 = semi-circle
+geometry = 1; % 0 = parabola, 1 = triangle, 2 = semi-circle
 
 %% Build S matrix - Grid Points of riblets
 % S = 1 for points within and on boundary and = 0 elsewhere 
@@ -49,14 +49,13 @@ end
 
 if geometry == 1 % triangle
     shape='triangle';
-    z= linspace(0,1,nz);
     triangle = (z-lz/2);%+1+0.5*z)+0.5*lz;
     triangle2 = -z+lz/2;
     % triangle = (2*z-lz/2);%+1+0.5*z)+0.5*lz;
     % triangle2 = -2*z+lz/2;
     for k=1:nz
         for j=1:ny
-            if y(j)<triangle(k) || y(j)<triangle2(k)
+            if y(j)<=triangle(k) || y(j)<=triangle2(k)
                 S(j,k) = 1;
             else
                 S(j,k) = 0;
