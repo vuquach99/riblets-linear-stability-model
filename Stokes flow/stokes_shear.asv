@@ -16,7 +16,7 @@ lz = 1;
 ly = a*lz;
 
 % Define grid sizes
-n = 30;
+n = 20;
 nz = 2*n; % number of points in periodic z (spanwise)
 ny = a*nz; % number of points y (wall-normal) domain is enclosed
 dy = ly/(ny-1); % length of sub-intervals in y-axis
@@ -27,7 +27,7 @@ y = linspace(0,ly,ny);
 dpdx = 0; % Pressure gradient
 Sx = 1; % Shear at the top, could set to 1 (if normalised, always 1)
 
-geometry = 2; 
+geometry = 3; 
 % 0 = parabola 
 % 1 = triangle (k/s = 1.866 for 30deg, 0.5 for 90deg, 0.866 for 60deg)
 % 2 = semi-circle (k/s = 0.5)
@@ -321,8 +321,8 @@ for j=1:ny
                 else
                     yp0 = (4+2*sqrt(3))*z-3-2*sqrt(3);
                 end
-                zpPlus = (1 - y0)/(4+2*sqrt(3));
-                zpMinus = (3+2*sqrt(3) + y0)/(4+2*sqrt(3));
+                zpPlus = (1 - y0)/1.333;
+                zpMinus = (1.6667*lz/2 - y0)/1.333;
                 yp0 = -yp0;
             end
             
