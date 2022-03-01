@@ -11,14 +11,13 @@ tic
 
 %% Input data
 % Sides of the non-periodic-in-z domain
-a = 0.5; % aspect ratio ly:lz
-lz = 1;
-ly = a*lz;
+ly = 0.5; % always 0.5 for pressure-driven flow
+lz = 1; % always
 
 % Define grid sizes
-n = 50;
+n = 20;
 nz = 2*n+1; % number of points in non-periodic z (spanwise)
-ny = a*(nz-1); % number of points y (wall-normal) domain is enclosed
+ny = ly*(nz-1); % number of points y (wall-normal) domain is enclosed
 dy = ly/(ny-1); % length of sub-intervals in y-axis
 dz = lz/(nz-1); % length of sub-intervals in z-axis
 z = linspace(0,lz,nz);
@@ -27,9 +26,13 @@ y = linspace(0,ly,ny);
 dpdx = -1; % Pressure gradient
 Sx = 0; % Shear at the top, could set to 1 (if normalised, always 1)
 
-geometry = 1;
-% 0 = parabola, 1 = triangle, 2 = semi-circle
-% 3 = trapezium, 4 = blades
+geometry = 4; 
+% 0 = parabola (k/s = 1)
+% 1 = triangle (k/s = 1.866 for 30deg, 0.5 for 90deg, 0.866 for 60deg)
+% 2 = semi-circle (k/s = 0.5)
+% 3 = trapezium (k/s = 0.5; tip half-angle = 15deg)
+% 4 = blade (k/s = 0.5; t/s = 0.2)
+angle = 60; % 30/60/90 degrees, for triangles only
 
 savefile = 0;
 
@@ -39,9 +42,10 @@ S = zeros(ny,nz);
 if geometry == 0 % parabola
     parabola = (2*(z-lz/2)).^2;
     shape = 'parabola';
+    height = 1;
     for k = 1:nz
         for j = 1:ny
-            if y(j)<=parabola(k)
+            if y(j) < parabola(k)
                 S(j,k) = 1;
             else
                 S(j,k) = 0;
@@ -51,28 +55,42 @@ if geometry == 0 % parabola
 end
 
 if geometry == 1 % triangle
-    shape = 'triangle';
-    triangle = (z-lz/2);%+1+0.5*z)+0.5*lz;
-    triangle2 = -z+lz/2;
-    % triangle = (2*z-lz/2);%+1+0.5*z)+0.5*lz;
-    % triangle2 = -2*z+lz/2;
-    for k = 1:nz
-        for j = 1:ny
-            if y(j)<=triangle(k) || y(j)<=triangle2(k)
-                S(j,k) = 1;
-            else
-                S(j,k) = 0;
+    if angle == 90        
+        shape = 'triangle9';
+        height = 0.5;
+        triangle = z-lz/2;
+        triangle2 = -z+lz/2;
+    end
+    if angle == 60
+        shape = 'triangle6';
+        height = sqrt(3)/2;
+        triangle = sqrt(3)*z-sqrt(3)*lz/2;
+        triangle2 = -sqrt(3)*z+sqrt(3)*lz/2;
+    end
+    if angle == 30
+        shape = 'triangle3';
+        height = 1 + sqrt(3)/2;
+        triangle = (2+sqrt(3))*z-1-sqrt(3)*lz/2;
+        triangle2 = -(2+sqrt(3))*z+1+sqrt(3)*lz/2;
+    end
+        for k = 1:nz
+            for j = 1:ny
+                if y(j) < triangle(k) || y(j) < triangle2(k)
+                    S(j,k) = 1;
+                else
+                    S(j,k) = 0;
+                end
             end
         end
-    end
 end
 
 if geometry == 2 % semi-circle
-    circle = (-sqrt((lz/2)^2-(z-lz/2).^2))+ly;
     shape = 'circle';
+    height = 0.5;
+    circle = (-sqrt((lz/2)^2-(z-lz/2).^2))+lz/2;
     for k = 1:nz
         for j = 1:ny
-            if y(j)<=circle(k)
+            if y(j) < circle(k)
                 S(j,k) = 1;
             else
                 S(j,k) = 0;
@@ -80,37 +98,51 @@ if geometry == 2 % semi-circle
         end
     end
 end
-figure
-spy(S)
-title('S matrix')
 
 if geometry == 3 % trapezium
     shape='trapezium';
-    z= linspace(0,1,nz);
-    trapezium = (1.333*z-1.6667*lz/2);%+1+0.5*z)+0.5*lz;
-    trapezium2 = (-1.333*z+lz/2);
+    height = 0.5;
+    trapezium = (4+2*sqrt(3))*z-3.5-2*sqrt(3);
+    trapezium2 = -(4+2*sqrt(3))*z+0.5;
     for k=1:nz
         for j=1:ny
-            if y(j)<=trapezium(k) || y(j)<=trapezium2(k)
+            if y(j) < trapezium(k) || y(j) < trapezium2(k)
                 S(j, k) = 1;
             else
                 S(j, k) = 0;
             end
         end
     end
-    S(1,:) = ones(1,nz);
 end
+
+if geometry == 4 % blade
+    shape = 'blade';
+    height = 0.5;
+    for j = 1:height*nz
+        for k = 1:nz
+            if z(k) < 0.1*lz || z(k) > 0.9*lz
+                S(j, k) = 1;
+            else
+                S(j, k) = 0;
+            end
+        end
+    end
+end
+
+figure
+spy(S)
+title('S matrix')
 
 %% Build Sd matrix
 % Sd = 1 for points within and on boundary and = 0 elsewhere 
-% riblets now bigger by d = max(dy,dz)
+% riblets now bigger by rd = max(dy,dz)
+rd = max(dy,dz);
 Sd = zeros(ny,nz);
 if geometry == 0 % parabola
-    z = linspace(0,1,nz);
-    parabola_d = (2*(z-lz/2)).^2+dz;
+    parabola_d = (2*(z-lz/2)).^2+rd;
     for k = 1:nz
         for j = 1:ny
-            if y(j)<parabola_d(k)
+            if y(j) < parabola_d(k)
                 Sd(j,k) = 1;
             else
                 Sd(j,k) = 0;
@@ -120,9 +152,18 @@ if geometry == 0 % parabola
 end
 
 if geometry == 1 % triangle
-    z= linspace(0,1,nz);
-    triangle = (z-lz/2)+dy;%+1+0.5*z)+0.5*lz;
-    triangle2 = -z+lz/2+dy;
+    if angle == 90
+        triangle = z-lz/2+rd;
+        triangle2 = -z+lz/2+rd;
+    end
+    if angle == 60
+        triangle = sqrt(3)*z-sqrt(3)*lz/2+rd;
+        triangle2 = -sqrt(3)*z+sqrt(3)*lz/2+rd;
+    end
+    if angle == 30
+        triangle = (2+sqrt(3))*z-1-sqrt(3)*lz/2+rd;
+        triangle2 = -(2+sqrt(3))*z+1+sqrt(3)*lz/2+rd;
+    end
     for k = 1:nz
         for j = 1:ny
             if y(j)<triangle(k) || y(j)<triangle2(k)
@@ -135,8 +176,7 @@ if geometry == 1 % triangle
 end
 
 if geometry == 2 % semi-circle
-    z = linspace(0,1,nz);
-    circle = (-sqrt((lz/2)^2-(z-lz/2).^2))+ly+dy;
+    circle = (-sqrt((lz/2)^2-(z-lz/2).^2))+lz/2+rd;
     for k = 1:nz
         for j = 1:ny
             if y(j)<circle(k)
@@ -149,9 +189,8 @@ if geometry == 2 % semi-circle
 end
 
 if geometry == 3 % trapezium
-    z= linspace(0,1,nz);
-    trapezium = (1.333*z-1.6667*lz/2+dy);%+1+0.5*z)+0.5*lz;
-    trapezium2 = (-1.333*z+lz/2+dy);
+    trapezium = (4+2*sqrt(3))*z-3.5-2*sqrt(3)+rd;
+    trapezium2 = -(4+2*sqrt(3))*z+0.5+rd;
     for k=1:nz
         for j=1:ny
             if y(j)<trapezium(k) || y(j)<trapezium2(k)
@@ -161,8 +200,23 @@ if geometry == 3 % trapezium
             end
         end
     end
-    Sd(1:2,:) = ones(2,nz);
+    Sd(1,:) = ones(1,nz);
 end
+
+if geometry == 4 % blade
+    for j = 1:height*nz %+1 if domain height > 0.5*lz
+        for k = 1:nz
+            if z(k) <= 0.1*lz || z(k) >= 0.9*lz
+                Sd(j,k) = 1;
+            else
+                Sd(j,k) = 0;
+            end
+        end
+        Sd(j,end) = 1;
+    end
+    Sd(1,:) = ones(1,nz);
+end
+
 figure
 spy(Sd)
 title('Sd matrix')
@@ -269,6 +323,18 @@ for j=1:ny
                 yp0 = -yp0;
             end
             
+            if geometry == 4 % blade
+                z(k)<10/nz*lz | z(k)>38/nz*lz;
+                if z0 <= 7/nz*lz || z0>=41/nz*lz
+                    yp0 = max(y);
+                else
+                    yp0 = min(y);
+                end
+                epsilon = 0.001;
+                zpPlus = 41/nz*lz+epsilon;
+                zpMinus = 7/nz*lz-epsilon;
+            end
+            
             % check closest distance in z direction               
             if abs(z0-zpPlus) < abs(z0 - zpMinus)
                 zp0 = zpPlus;
@@ -356,11 +422,8 @@ else
     n1 = size(u,1);
 end
 u_max = full(max(u(:)));
-if dpdx == -1 && Sx == 0 && geometry == 2
-    fprintf('4*u_max = %f\n', u_max*4)
-else
-    fprintf('u_max = %f\n', u_max)
-end
+fprintf('u_max = %f\n', u_max)
+
 figure
 surfc(z,y,u)
 title('u profile')

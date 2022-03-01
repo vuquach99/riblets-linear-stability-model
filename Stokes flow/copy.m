@@ -356,8 +356,8 @@ integralz=dz*trapz(integraly) % integration in y and z
 relErrorint=abs((0.0122602323037932-integralz)/0.0122602323037932*100);
 relError=abs((ua-u)/umax*100);
 points_y=ny-1;
-tit = ['No_points_' num2str(ny-1) '_Shape_' num2str(shape) '.mat'];
-save(tit,'points_y','relError', 'relErrorint', 'integralz');
+% tit = ['No_points_' num2str(ny-1) '_Shape_' num2str(shape) '.mat'];
+% save(tit,'points_y','relError', 'relErrorint', 'integralz');
 
 % figure
 % surf(ua-u)

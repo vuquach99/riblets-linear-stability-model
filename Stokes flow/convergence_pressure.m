@@ -35,11 +35,11 @@ for n = 5:1:30
     %% Build S matrix - Grid Points of riblets
     % S = 1 for points within and on boundary and = 0 elsewhere 
     S = zeros(ny,nz);
-    circle = (-sqrt((lz/2)^2-(z-lz/2).^2))+ly;
+    circle = (-sqrt((lz/2)^2-(z-lz/2).^2))+lz/2;
     shape = 'circle';
     for k = 1:nz
         for j = 1:ny
-            if y(j)<=circle(k)
+            if y(j)<circle(k)
                 S(j,k) = 1;
             else
                 S(j,k) = 0;
@@ -52,8 +52,7 @@ for n = 5:1:30
     % riblets now bigger by d = max(dy,dz)
     Sd = zeros(ny,nz);
 
-    z = linspace(0,1,nz);
-    circle = (-sqrt((lz/2)^2-(z-lz/2).^2))+ly+dy;
+    circle = (-sqrt((lz/2)^2-(z-lz/2).^2))+lz/2+dy;
     for k = 1:nz
         for j = 1:ny
             if y(j)<circle(k)

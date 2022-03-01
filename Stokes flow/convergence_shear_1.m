@@ -11,18 +11,18 @@ tic
 
 %% Input data
 % Sides of the periodic-in-z domain
-a = 2; % aspect ratio ly:lz
+ly = 2; % aspect ratio ly:lz
 lz = 1;
-ly = a*lz;
 
 u_max_hist = [];
 n_hist = [];
+h_hist = [];
 
 % Define grid sizes
-for n = 5:5:60
+for n = [5:5:50 60:10:100]
     n_hist(end+1) = n;
     nz = 2*n; % number of points in periodic z (spanwise)
-    ny = a*nz; % number of points y (wall-normal) domain is enclosed
+    ny = ly*nz; % number of points y (wall-normal) domain is enclosed
     dy = ly/(ny-1); % length of sub-intervals in y-axis
     dz = lz/nz; % length of sub-intervals in z-axis
     z = (0:nz-1)*dz;
@@ -31,8 +31,8 @@ for n = 5:5:60
     dpdx = 0; % Pressure gradient
     Sx = 1; % Shear at the top, could set to 1 (if normalised, always 1)
 
-    geometry = 2; 
-    % 0 = parabola 
+    geometry = 1; 
+    % 0 = parabola (k/s = 1)
     % 1 = triangle (k/s = 1.866 for 30deg, 0.5 for 90deg, 0.866 for 60deg)
     % 2 = semi-circle (k/s = 0.5)
     % 3 = trapezium (k/s = 0.5; tip half-angle = 15deg)
@@ -101,8 +101,8 @@ for n = 5:5:60
 
     if geometry == 3 % trapezium
         shape='trapezium';
-        trapezium = (4+2*sqrt(3))*z-3-2*sqrt(3);
-        trapezium2 = -(4+2*sqrt(3))*z+1;
+        trapezium = (4+2*sqrt(3))*z-3.5-2*sqrt(3);
+        trapezium2 = -(4+2*sqrt(3))*z+0.5;
         for k=1:nz
             for j=1:ny
                 if y(j)<=trapezium(k) || y(j)<=trapezium2(k)
@@ -183,8 +183,8 @@ for n = 5:5:60
     end
 
     if geometry == 3 % trapezium
-        trapezium = (4+2*sqrt(3))*z-3-2*sqrt(3)+dy;
-        trapezium2 = -(4+2*sqrt(3))*z+1+dy;
+        trapezium = (4+2*sqrt(3))*z-3.5-2*sqrt(3)+dy;
+        trapezium2 = -(4+2*sqrt(3))*z+0.5+dy;
         for k=1:nz
             for j=1:ny
                 if y(j)<trapezium(k) || y(j)<trapezium2(k)
@@ -194,7 +194,6 @@ for n = 5:5:60
                 end
             end
         end
-        % Sd = flip(Sd);
         Sd(1:2,:) = ones(2,nz);
     end
 
@@ -209,6 +208,7 @@ for n = 5:5:60
             end
             Sd(j,end) = 1;
         end
+        S(1,:) = ones(1,nz);
     end
 
     %% Build Sc matrix - curve of the boundary
@@ -429,14 +429,15 @@ for n = 5:5:60
     %% average in z
     ums = mean(u,2);
     ums = full(ums);
-    % % find point of min gradient
-    % grad = zeros(1,ny);
-    % for i = 1:ny-1
-    %     grad(i) = (y(i+1)-y(i))/(ums(i+1)-ums(i));
-    % end
-    % grad(ny) = grad(ny-1);
-    % [grad_min, min] = min(grad);
-    % boundary = y(min)-grad_min*ums(min);
+    % find point of min gradient
+    grad = zeros(1,ny);
+    for i = 1:ny-1
+        grad(i) = (y(i+1)-y(i))/(ums(i+1)-ums(i));
+    end
+    grad(ny) = grad(ny-1);
+    [grad_min, minimum] = min(grad);
+    boundary = y(minimum)-grad_min*ums(minimum);
+    h_hist(end+1)= 0.5 - boundary;
     % y_line = grad_min*ums + boundary;
     % fprintf('Virtual boundary at y = %f\n', boundary)
     % 
@@ -461,5 +462,9 @@ end
 figure
 semilogy(n_hist, u_max_hist)
 ylabel('u_{max}')
+xlabel('n')
+figure
+plot(n_hist, h_hist)
+ylabel('h_{||}')
 xlabel('n')
 toc

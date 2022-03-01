@@ -15,14 +15,14 @@ lz = 1;
 
 u_max_hist = [];
 a_hist = [];
+h_hist = [];
 
 n = 40;
 % Define grid sizes
-for a = 1:0.5:4 % aspect ratio ly:lz
-    a_hist(end+1) = a;
-    ly = a*lz;
+for ly = 1:0.5:4 % aspect ratio ly:lz
+    a_hist(end+1) = ly;
     nz = 2*n; % number of points in periodic z (spanwise)
-    ny = (a*nz); % number of points y (wall-normal) domain is enclosed
+    ny = ly*nz; % number of points y (wall-normal) domain is enclosed
     dy = ly/(ny-1); % length of sub-intervals in y-axis
     dz = lz/nz; % length of sub-intervals in z-axis
     z = (0:nz-1)*dz;
@@ -31,8 +31,8 @@ for a = 1:0.5:4 % aspect ratio ly:lz
     dpdx = 0; % Pressure gradient
     Sx = 1; % Shear at the top, could set to 1 (if normalised, always 1)
 
-    geometry = 2; 
-    % 0 = parabola 
+    geometry = 1; 
+    % 0 = parabola (k/s = 1)
     % 1 = triangle (k/s = 1.866 for 30deg, 0.5 for 90deg, 0.866 for 60deg)
     % 2 = semi-circle (k/s = 0.5)
     % 3 = trapezium (k/s = 0.5; tip half-angle = 15deg)
@@ -101,8 +101,8 @@ for a = 1:0.5:4 % aspect ratio ly:lz
 
     if geometry == 3 % trapezium
         shape='trapezium';
-        trapezium = (4+2*sqrt(3))*z-3-2*sqrt(3);
-        trapezium2 = -(4+2*sqrt(3))*z+1;
+        trapezium = (4+2*sqrt(3))*z-3.5-2*sqrt(3);
+        trapezium2 = -(4+2*sqrt(3))*z+0.5;
         for k=1:nz
             for j=1:ny
                 if y(j)<=trapezium(k) || y(j)<=trapezium2(k)
@@ -127,7 +127,7 @@ for a = 1:0.5:4 % aspect ratio ly:lz
             end
         end
     end
-
+    
     %% Build Sd matrix
     % Sd = 1 for points within and on boundary and = 0 elsewhere 
     % riblets now bigger by d = max(dy,dz)
@@ -183,8 +183,8 @@ for a = 1:0.5:4 % aspect ratio ly:lz
     end
 
     if geometry == 3 % trapezium
-        trapezium = (4+2*sqrt(3))*z-3-2*sqrt(3)+dy;
-        trapezium2 = -(4+2*sqrt(3))*z+1+dy;
+        trapezium = (4+2*sqrt(3))*z-3.5-2*sqrt(3)+dy;
+        trapezium2 = -(4+2*sqrt(3))*z+0.5+dy;
         for k=1:nz
             for j=1:ny
                 if y(j)<trapezium(k) || y(j)<trapezium2(k)
@@ -194,7 +194,6 @@ for a = 1:0.5:4 % aspect ratio ly:lz
                 end
             end
         end
-        % Sd = flip(Sd);
         Sd(1:2,:) = ones(2,nz);
     end
 
@@ -209,6 +208,7 @@ for a = 1:0.5:4 % aspect ratio ly:lz
             end
             Sd(j,end) = 1;
         end
+        S(1,:) = ones(1,nz);
     end
 
     %% Build Sc matrix - curve of the boundary
@@ -429,14 +429,15 @@ for a = 1:0.5:4 % aspect ratio ly:lz
     %% average in z
     ums = mean(u,2);
     ums = full(ums);
-    % % find point of min gradient
-    % grad = zeros(1,ny);
-    % for i = 1:ny-1
-    %     grad(i) = (y(i+1)-y(i))/(ums(i+1)-ums(i));
-    % end
-    % grad(ny) = grad(ny-1);
-    % [grad_min, min] = min(grad);
-    % boundary = y(min)-grad_min*ums(min);
+    % find point of min gradient
+    grad = zeros(1,ny);
+    for i = 1:ny-1
+        grad(i) = (y(i+1)-y(i))/(ums(i+1)-ums(i));
+    end
+    grad(ny) = grad(ny-1);
+    [grad_min, minimum] = min(grad);
+    boundary = y(minimum)-grad_min*ums(minimum);
+    h_hist(end+1)= 0.5 - boundary;
     % y_line = grad_min*ums + boundary;
     % fprintf('Virtual boundary at y = %f\n', boundary)
     % 
@@ -461,5 +462,9 @@ end
 figure
 semilogy(a_hist, u_max_hist)
 ylabel('u_{max}')
+xlabel('a')
+figure
+plot(a_hist, h_hist)
+ylabel('h_{||}')
 xlabel('a')
 toc
