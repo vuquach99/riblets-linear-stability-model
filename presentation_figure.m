@@ -1,6 +1,6 @@
 clear
-clc
-%close all
+close all
+
 % Nosmod=[512];
 Nosmod=256;
 nosmod=Nosmod;
@@ -44,7 +44,7 @@ for jRe=1:length(Rtt)
         Lwpp=Lwp(jK);
 %         fname=['results/nosmod_' num2str(jnosmod) '_Rt_' num2str(Rt) '_Lwp_' num2str(Lwpp) '_' flowtype '.mat'];
         %fname=['ribstab_Rt' num2str(Rt) '_Lw' num2str(Lwpp) '_Ny' num2str(nosmod) '.mat']
-        fname = ['ribstab_Rt550_Lw1.6146_Ny256.mat'] 
+        fname = ['ribstab_Rt550_Lw3.3264_Ny256.mat'] % set inside grooves
         load(fname)
         nx=length(lxp);
 %          utau=Rt/Re;
@@ -55,7 +55,7 @@ for jRe=1:length(Rtt)
         hold on
         n = length(Lwp);
         plot(lxp,imag_eigval, 'LineWidth', 2)
-        fname = ['ribstab_Rt550_Lw4.6132_Ny256.mat']
+        fname = ['ribstab_Rt550_Lw5.0335_Ny256.mat'] % set at tips
         load(fname)
         for p=1:nx;
         imag_eigval(p)=max(imag(eigvals(:,p)))/utau/Rt; %.*Re./Rt.^2;
@@ -64,8 +64,8 @@ for jRe=1:length(Rtt)
         plot(lxp,imag_eigval, 'LineWidth', 2)
         yline(0,'--','LineWidth',2)
         legend('Set inside grooves', 'Set at tips','', 'location', 'Southeast')
-        
-        title('Amplification vs Wavelength for l_g^+ = 20')
+        set(gcf,'position',[160 280 800 600])
+        title('Amplification vs Wavelength for s = 20, trapezium')
         set(gca,'xscale','log')
         set(gca,'Fontn','Times','FontSize',18,'LineWidth',2)
         %set(gca,'YTick',[0:.1:.2])

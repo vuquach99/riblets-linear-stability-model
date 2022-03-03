@@ -11,7 +11,7 @@ tic
 
 %% Input data
 % Sides of the non-periodic-in-z domain
-ly = 0.010186218918508; % always <= height for pressure-driven flow
+ly = 0.5 % always <= height for pressure-driven flow
 % blade: 0.368504583707110
 % triangle9: 0.351838677288411
 % triangle6: 0.690839905195580

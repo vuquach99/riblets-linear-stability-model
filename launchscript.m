@@ -1,34 +1,48 @@
 clear
-clc
-q = 0.35;
-s=[20]';%1 5 10 14 16 [1 2 5 10 11 14 16 18 20 25 30 40 50]'; %[5 10 20 30 40 50]';
-Lwp=q*((pi/256)^(1/3))*s;
-Lsp=q*((1/24)^(1/2))*s; 
-%% Triangular riblets
+close all
+
+% Riblet spacing
+s = 20;
+%1 5 10 14 16 [1 2 5 10 11 14 16 18 20 25 30 40 50]'; 
+%[5 10 20 30 40 50]';
+
+%% Riblets coefficients
+% F1 = integration at (y=0,z); F2 = integration at (y,z)
+
+% % Semi-circular riblets (analytical results)
+% Lwp=((pi/256)^(1/3))*s;
+% Lsp=((1/24)^(1/2))*s; 
+% % Triangular riblets
 % F1=0.004448936237952;
 % F2=0.020842780639986;
-%% Trapezoidal riblets
+% % Trapezoidal riblets
 % F1=0.007178406796948;
 % F2=0.027606404326489;
-%% Blade
+% % Blade
 % F1=0.0083;
 % F2=0.0229;
-%% Permeabilities expression 
-% Lwp=F1^(1/3)*s;
-% Lsp=F2^(1/2)*s;
+% 
+% G1=0.1269;
+% G2=0.2507;
 
+G1 = 0.010186218918508;
+G2 = 0.079499240342151;
+F1 = 0.004600779375360;
+F2 = 0.023389072261482;
 
-G1=0.1269;
-G2=0.2507;
-Lhq=q*s*(G1^(1/2));
-Lsq=q*s*G2;
+% % Permeabilities expression 
+Lwp = s*F1^(1/3);
+Lsp = s*F2^(1/2);
+Lhq = s*G1^(1/2);
+Lsq = s*G2;
 
+%% Other constants
 Rtt=[550]';
 % Sweep through a range of wavelengths
 nosmod=256;%256%
 nx=50;
-lxpmin=5;
-lxpmax=10000;
+lxpmin=10;
+lxpmax=500;
 % For investigating a single wavelength value
 % nx= 1; % number of wavelengths
 % lxpmin=56;
@@ -38,7 +52,7 @@ kapa=0.426;
 Aint =25.4;
 eddyfrac=1;
 
-[D0,D1,D2,D3,D4]=Dmat_inviscid(nosmod); % Chebychev polynomials
+[D0,D1,D2,D3,D4]=Dmat_inviscid(nosmod); % Chebyshev polynomials
 
 lxp=log(lxpmin):(log(lxpmax)-log(lxpmin))/(nx-1):log(lxpmax);
 lxp=fliplr(exp(lxp));

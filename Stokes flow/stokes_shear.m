@@ -11,11 +11,11 @@ tic
 
 %% Input data
 % Sides of the periodic-in-z domain
-ly = 2; % aspect ratio ly:lz
+ly = 4; % aspect ratio ly:lz
 lz = 1; % always
 
 % Define grid sizes
-n = 10;
+n = 50;
 nz = 2*n; % number of points in periodic z (spanwise)
 ny = ly*nz; % number of points y (wall-normal) domain is enclosed
 dy = ly/(ny-1); % length of sub-intervals in y-axis
@@ -26,7 +26,7 @@ y = linspace(0,ly,ny);
 dpdx = 0; % Pressure gradient
 Sx = 1; % Shear at the top, could set to 1 (if normalised, always 1)
 
-geometry = 4; 
+geometry = 3; 
 % 0 = parabola (k/s = 1)
 % 1 = triangle (k/s = 1.866 for 30deg, 0.5 for 90deg, 0.866 for 60deg)
 % 2 = semi-circle (k/s = 0.5)
@@ -107,9 +107,9 @@ if geometry == 3 % trapezium
     for k=1:nz
         for j=1:ny
             if y(j) < trapezium(k) || y(j) < trapezium2(k)
-                S(j, k) = 1;
+                S(j,k) = 1;
             else
-                S(j, k) = 0;
+                S(j,k) = 0;
             end
         end
     end
@@ -121,17 +121,17 @@ if geometry == 4 % blade
     for j = 1:height*nz
         for k = 1:nz
             if z(k) < 0.1*lz || z(k) > 0.9*lz
-                S(j, k) = 1;
+                S(j,k) = 1;
             else
-                S(j, k) = 0;
+                S(j,k) = 0;
             end
         end
     end
 end
 
-figure
-spy(S)
-title('S matrix')
+% figure
+% spy(S)
+% title('S matrix')
 
 %% Build Sd matrix
 % Sd = 1 for points within and on boundary and = 0 elsewhere 
@@ -194,9 +194,9 @@ if geometry == 3 % trapezium
     for k=1:nz
         for j=1:ny
             if y(j)<trapezium(k) || y(j)<trapezium2(k)
-                Sd(j, k) = 1;
+                Sd(j,k) = 1;
             else
-                Sd(j, k) = 0;
+                Sd(j,k) = 0;
             end
         end
     end
@@ -204,22 +204,21 @@ if geometry == 3 % trapezium
 end
 
 if geometry == 4 % blade
-    for j = 1:height*nz+1
+    for j = 1:height*nz+1 %+1 if domain height > 0.5*lz
         for k = 1:nz
-            if z(k) <= 0.1*lz || z(k) >= 0.9*lz
+            if z(k) < 0.1*lz+dz-0.00001 || z(k) > 0.9*lz-dz+0.00001
                 Sd(j,k) = 1;
             else
                 Sd(j,k) = 0;
             end
         end
-        Sd(j,end) = 1;
     end
     Sd(1,:) = ones(1,nz);
 end
 
-figure
-spy(Sd)
-title('Sd matrix')
+% figure
+% spy(Sd)
+% title('Sd matrix')
 
 %% Build Sc matrix - curve of the boundary
 Sc = Sd-S;
@@ -303,17 +302,17 @@ for j=1:ny
                     else
                         yp0 = z0-lz/2;
                     end
-                    zpPlus = y0 + lz/2;
-                    zpMinus = -y0 + lz/2;
+                    zpPlus = y0+lz/2;
+                    zpMinus = -y0+lz/2;
                 end
                 if angle == 60
                     if z0 <= lz/2
-                        yp0 = sqrt(3)*z0-sqrt(3)*lz/2;
-                    else
                         yp0 = -sqrt(3)*z0+sqrt(3)*lz/2;
+                    else
+                        yp0 = sqrt(3)*z0-sqrt(3)*lz/2;
                     end
-                    zpPlus = lz/2 - y0;
-                    zpMinus = y0 + lz/2;
+                    zpPlus = y0/sqrt(3)+lz/2;
+                    zpMinus = -y0/sqrt(3)+lz/2;
                 end
                 if angle == 30
                     if z0 <= lz/2
@@ -321,8 +320,8 @@ for j=1:ny
                     else
                         yp0 = -(2+sqrt(3))*z0+1+sqrt(3)*lz/2;
                     end
-                    zpPlus = lz/2 - y0;
-                    zpMinus = y0 + lz/2;
+                    zpPlus = y0/(2+sqrt(3))+(1+sqrt(3)*lz/2)/(2+sqrt(3));
+                    zpMinus = -y0/(2+sqrt(3))+(1+sqrt(3)*lz/2)/(2+sqrt(3));
                 end
             end
             
@@ -333,26 +332,30 @@ for j=1:ny
             end
             
             if geometry == 3 % trapezium
-                if z0 <= lz/2
-                    yp0 =  -(4+2*sqrt(3))*z+0.5;
-                else
+                if z0 <= 0.5-sqrt(3)/4
+                    yp0 = -(4+2*sqrt(3))*z+0.5;
+                elseif z0 >= 0.5+sqrt(3)/4
                     yp0 = (4+2*sqrt(3))*z-3.5-2*sqrt(3);
+                else
+                    yp0 = 0;
                 end
-                zpPlus = (0.5 - y0)/(4+2*sqrt(3));
-                zpMinus = (3.5+2*sqrt(3) + y0)/(4+2*sqrt(3));
-                yp0 = -yp0;
+                zpPlus = (3.5+2*sqrt(3)+y0)/(4+2*sqrt(3));
+                zpMinus = (0.5-y0)/(4+2*sqrt(3));
             end
             
             if geometry == 4 % blade
-                z(k)<10/nz*lz | z(k)>38/nz*lz;
-                if z0 <= 7/nz*lz || z0>=41/nz*lz
-                    yp0 = max(y);
+                if z0 < 0.1*lz || z0 > 0.9*lz
+                    yp0 = height*lz;
                 else
-                    yp0 = min(y);
+                    yp0 = 0;
                 end
-                epsilon = 0.001;
-                zpPlus = 41/nz*lz+epsilon;
-                zpMinus = 7/nz*lz-epsilon;
+                if y0 <= height*lz
+                    zpPlus = 0.9*lz+0.0001;
+                    zpMinus = 0.1*lz-0.0001;
+                else
+                    zpPlus = 0;
+                    zpMinus = lz;
+                end                
             end
             
             % check closest distance in z direction               
@@ -394,28 +397,27 @@ for j=1:ny
             A(index,index) = bj(2) + bk(2);            
             if abs(deltay)<dy           
                 if j==1
-                  A(index,index+ny-1) = bj(1); %?
-                  A(index,index+1) = 0;                  
+                    A(index,index+ny-1) = bj(1); %?
+                    A(index,index+1) = 0;                 
                 elseif j==ny
-                  A(index,index-ny+1) = bj(3);
-                  A(index,index-1) = 0;
-
+                    A(index,index-ny+1) = bj(3);
+                    A(index,index-1) = 0;
                 else
-                  A(index,index-sign(deltays)) = 0;       
-                  A(index,index+sign(deltays)) = bj(2+sign(deltays));
+                    A(index,index-sign(deltays)) =0;       
+                    A(index,index+sign(deltays)) = bj(2+sign(deltays));
                 end
             end   
             
             if abs(deltaz)<dz 
                 if k==1
-                  A(index,index+(nz-1)*ny) = bk(1);
-                  A(index,index+ny) = bk(3);
+                    A(index,index+(nz-1)*ny) = bk(1);
+                    A(index,index+ny) = bk(3);
                 elseif k==nz
-                  A(index,index-ny) = bk(3);
-                  A(index,index-(nz-1)*ny) = bk(1);
+                    A(index,index-ny) = bk(3);
+                    A(index,index-(nz-1)*ny) = bk(1);
                 else
-                  A(index,index-sign(deltazs)*ny) = bk(2-sign(deltazs)); %?
-                  A(index,index+sign(deltazs)*ny) = bk(2+sign(deltazs));
+                    A(index,index-sign(deltazs)*ny) = bk(2-sign(deltazs)); %?
+                    A(index,index+sign(deltazs)*ny) = bk(2+sign(deltazs));
                 end
             end
         end
@@ -435,17 +437,9 @@ end
 figure
 spy(A)
 u = mldivide(A,P);
-u = reshape(u,ny,nz);
-if size(u,1) > height*nz
-    u_g = u(1:round(height*nz),:); % velocity profile in groove
-    n1 = round(height*nz); % index for plotting
-else
-    u_g = u;
-    n1 = size(u,1);
-end
-u_max = full(max(u_g(:)));
-fprintf('u_max = %f\n', u_max)
-figure
+u = reshape(u,ny,nz); % converts u into size (ny,nz)
+
+figure % 3d u profile
 surfc(z,y,u)
 title('u profile')
 axis image
@@ -453,20 +447,22 @@ ylabel('y', 'FontSize', 18)
 xlabel('z', 'FontSize', 18)
 set(gca,'FontSize',18)
 
-figure
-surfc(z,y(1:n1),u_g)
-title('u profile in groove')
-
-%% Verify
-for k = 1:nz
-    Sxtot(k) = (u(ny,k)-u(ny-1,k))/dy;
-end
-Sxtotm = mean(Sxtot);
+figure % 2d u profile
+pcolor(u)
+shading interp
+axis image
+colorbar
+set(gca,'layer','top')
+title('u')
+colorbar
+ylabel('y')
+xlabel('z')
 
 %% average in z and find point of min gradient
 ums = mean(u,2);
 ums = full(ums);
-% find point of min gradient
+
+% find point of min gradient and plot
 grad = zeros(1,ny);
 for i = 1:ny-1
     grad(i) = (y(i+1)-y(i))/(ums(i+1)-ums(i));
@@ -485,14 +481,24 @@ ylabel('$y$','Interpreter','Latex')
 xlabel('$\bar{u}$','Interpreter','Latex')
 set(gca,'FontName','times','FontSize',15)
 
-%% Error and Grid Independence
-integraly = dy*trapz(full(u));
-integralz = dz*trapz(integraly) % integration in y and z
-points_y = ny-1;
+% calculate and plot u profile under virtual origin
+n1 = round(boundary*nz); % index of virtual origin
+u_0 = u(1:n1,:);
+
+figure
+surfc(z,y(1:n1),u_0)
+title('u profile under virtual origin')
+
+%% calculate coefficients
+integraly = dy*trapz(full(u_0)); % integrate u*dy with z constant
+G1 = dz*trapz(integraly) % integration in y and z
+
+u_surf = u_0(end,:);
+G2 = dz*trapz(full(u_surf)) % integration in z at top layer
 
 if savefile == 1
-    tit = ['No_points_' num2str(ny-1) '_Shape_' num2str(shape) '.mat'];
-    save(tit,'points_y','relError', 'relErrorint', 'integralz');
+    tit = ['No_points_' num2str(ny) '_Shape_' num2str(shape) '.mat'];
+    save(tit,'ny','relError', 'relErrorint', 'integralz');
 end
 
 toc
