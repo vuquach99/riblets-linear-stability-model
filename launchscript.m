@@ -2,39 +2,32 @@ clear
 close all
 
 % Riblet spacing
-s = 20;
+s = 20; % s+ % should change to lg+
 %1 5 10 14 16 [1 2 5 10 11 14 16 18 20 25 30 40 50]'; 
 %[5 10 20 30 40 50]';
 
 %% Riblets coefficients
 % F1 = integration at (y=0,z); F2 = integration at (y,z)
-
-% % Semi-circular riblets (analytical results)
-% Lwp=((pi/256)^(1/3))*s;
-% Lsp=((1/24)^(1/2))*s; 
-% % Triangular riblets
+Lwp=((pi/256)^(1/3))*s;
+Lsp=((1/24)^(1/2))*s; 
+%% Triangular riblets
 % F1=0.004448936237952;
 % F2=0.020842780639986;
-% % Trapezoidal riblets
+%% Trapezoidal riblets
 % F1=0.007178406796948;
 % F2=0.027606404326489;
-% % Blade
+%% Blade
 % F1=0.0083;
 % F2=0.0229;
-% 
-% G1=0.1269;
-% G2=0.2507;
+%% Permeabilities expression 
+% Lwp=F1^(1/3)*s;
+% Lsp=F2^(1/2)*s;
 
-G1 = 0.010186218918508;
-G2 = 0.079499240342151;
-F1 = 0.004600779375360;
-F2 = 0.023389072261482;
 
-% % Permeabilities expression 
-Lwp = s*F1^(1/3);
-Lsp = s*F2^(1/2);
-Lhq = s*G1^(1/2);
-Lsq = s*G2;
+G1=0.1269;
+G2=0.2507;
+Lhq=s*(G1^(1/2));
+Lsq=s*G2;
 
 %% Other constants
 Rtt=[550]';
@@ -42,15 +35,16 @@ Rtt=[550]';
 nosmod=256;%256%
 nx=50;
 lxpmin=10;
-lxpmax=500;
+lxpmax=5000;
 % For investigating a single wavelength value
 % nx= 1; % number of wavelengths
 % lxpmin=56;
 % lxpmax=57;
-    
-kapa=0.426;
-Aint =25.4;
-eddyfrac=1;
+
+% for turprof_generic.m
+kapa = 0.426;
+Aint = 25.4;
+eddyfrac = 1;
 
 [D0,D1,D2,D3,D4]=Dmat_inviscid(nosmod); % Chebyshev polynomials
 
@@ -58,11 +52,11 @@ lxp=log(lxpmin):(log(lxpmax)-log(lxpmin))/(nx-1):log(lxpmax);
 lxp=fliplr(exp(lxp));
 zi=sqrt(-1);
 
-NK=size(Lwp,1);
+NK=size(Lwp,1); % length of s
 NR=size(Rtt,1);
 for jR=1:NR
   Rt=Rtt(jR)
-  [y,nut,uc,Re]=turprof_generic(nosmod,Aint,kapa,eddyfrac,Rt); % Cess turbulent velocity profile inside channel
+  [y,nut,uc,Re]=turprof_generic(nosmod,Aint,kapa,eddyfrac,Rt); % Cess turbulent profile inside channel
   utau=Rt/Re;
   alp0=2*pi*Rt./lxp;
   for jK=1:NK
@@ -96,8 +90,8 @@ for r=1:length(Lwp)
     b{r} = imag(eigvals(a{r}));
 %     maxim=max(imag(eigvals));
 %     maxim=max(maxim)/utau/Rt;
-%     plot(real(eigvals)/utau/Rt,imag(eigvals)/utau/Rt,'.', 'Color', [(r-1)*1/n', 0, 1-(r-1)*1/n],'MarkerSize', 10)
-     plot(real(eigvals)/utau/Rt,imag(eigvals)/utau/Rt,'.', 'Color', [(r-1)*1/n', 0, 1-(r-1)*1/n],'MarkerSize', 10)
+%     plot(real(eigvals)/utau/Rt,imag(eigvals)/utau/Rt,'.','Color',[(r-1)*1/n',0,1-(r-1)*1/n],'MarkerSize',10)
+     plot(real(eigvals)/utau/Rt,imag(eigvals)/utau/Rt,'.','Color',[(r-1)*1/n',0,1-(r-1)*1/n],'MarkerSize',10)
     hold on
 end
 
@@ -113,15 +107,15 @@ hold on
 mrk{1}='.'; mrk{2}='x'; mrk{3}='k-s'; mrk{4}='k-^'; %'k-o' 'k-*'
 clr(1,:)='k'; clr(2,:)='k'; clr(3,:)='k'; clr(4,:)='k';
 line{1} = 'k-'; line{2} = 'k--'; line{3} = 'k:';
-    marker=mrk{1};
-    for r=1:length(Lwp)
-        Lwpp=Lwp(r);
-        fname=['ribstab_Rt' num2str(Rt) '_Lw' num2str(Lwpp) '_Ny' num2str(nosmod) '.mat'];
-        load(fname)
-        plot(real(Max_unstab)/utau/Rt,imag(Max_unstab)/utau/Rt,marker, 'Color', [(r-1)*1/n', 0, 1-(r-1)*1/n],'MarkerSize', 22)
-        hold on
-%         Max_unstab_all(r,c)=Max_unstab;
-    end
+marker=mrk{1};
+for r=1:length(Lwp)
+    Lwpp=Lwp(r);
+    fname=['ribstab_Rt' num2str(Rt) '_Lw' num2str(Lwpp) '_Ny' num2str(nosmod) '.mat'];
+    load(fname)
+    plot(real(Max_unstab)/utau/Rt,imag(Max_unstab)/utau/Rt,marker,'Color',[(r-1)*1/n',0,1-(r-1)*1/n],'MarkerSize',22)
+    hold on
+%     Max_unstab_all(r,c)=Max_unstab;
+end
 % Difference=(abs(imag(Max_unstab_all(:,1))-imag(Max_unstab_all(:,2))))
 % indexes=find(max(Difference));
 % Difference(indexes)=NaN
