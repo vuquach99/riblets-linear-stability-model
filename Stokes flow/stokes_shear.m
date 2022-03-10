@@ -11,27 +11,25 @@ tic
 
 %% Input data
 lz = 1; % always
-ly = 0.5 % always > height for periodic flow
+ly = 0.5; % always > height for periodic flow
 
 % Define grid sizes
 nz = 20; % number of points in periodic z (spanwise)
 ny = 21; % number of points y (wall-normal) domain is enclosed
 dy = ly/(ny-1); % length of sub-intervals in y-axis
 dz = lz/nz; % length of sub-intervals in z-axis
-z = (0:nz-1)/nz;
 y = (0:ny-1)/(ny-1)*ly;
+z = (0:nz-1)/nz*lz;
 
 dpdx = 0; % Pressure gradient
 Sx = 1; % Shear at the top, could set to 1 (if normalised, always 1)
 
-geometry = 2; 
-% 1 = triangle (k/s = 1.866 for 30deg, 0.5 for 90deg, 0.866 for 60deg)
+geometry = 2
+% 1 = triangle (k/s = 1+sqrt(3) for 30deg, 0.5 for 90deg, sqrt(3) for 60deg)
 % 2 = semi-circle (k/s = 0.5)
 % 3 = trapezium (k/s = 0.5; tip half-angle = 15deg)
 % 4 = blade (k/s = 0.5; t/s = 0.2)
-angle = 30; % 30/60/90 degrees, for triangles only
-
-savefile = 0;
+angle = 90; % 30/60/90 degrees, for triangles only
 
 %% Build S matrix - Grid Points of riblets
 % S = 1 for points within and on boundary and = 0 elsewhere 
@@ -40,7 +38,7 @@ S = zeros(ny,nz);
 if geometry == 1 % triangle
     if angle == 90        
         shape = 'triangle9';
-        height = 0.5;
+        height = 0.5*lz;
         triangle = z-lz/2+0.00001;
         triangle2 = -z+lz/2+0.00001;
     end
@@ -117,6 +115,7 @@ spy(S)
 rd = max(dy,dz);
 Sd = zeros(ny,nz);
 n_g = round(height/ly*ny); % index at riblet surface
+
 if geometry == 1 % triangle
     if angle == 90
         triangle = z+rd-lz/2+0.00001;
@@ -124,11 +123,9 @@ if geometry == 1 % triangle
         ztriangle = (0:100)/100; % reference
         ytriangle1 = ztriangle-lz/2+0.00001;
         ytriangle2 = -ztriangle+lz/2+0.00001;
-        zplot = 1+ztriangle*nz;
+        zplot = 1+ztriangle*(nz-1)/lz;
         yplot1 = 1+ytriangle1*(ny-1)/ly;
         yplot2 = 1+ytriangle2*(ny-1)/ly;
-        figure(1)
-        plot(zplot,yplot1,'k',zplot,yplot2,'k')
     end
     if angle == 60
         triangle = sqrt(3)*(z+rd)-sqrt(3)*lz/2;
@@ -136,11 +133,10 @@ if geometry == 1 % triangle
         ztriangle = (0:100)/100; % reference
         ytriangle1 = sqrt(3)*ztriangle-sqrt(3)*lz/2;
         ytriangle2 = -sqrt(3)*ztriangle+sqrt(3)*lz/2;
-        zplot = 1+ztriangle*nz;
+        zplot = 1+ztriangle*(nz-1);
         yplot1 = 1+ytriangle1*(ny-1)/ly;
         yplot2 = 1+ytriangle2*(ny-1)/ly;
-        figure(1)
-        plot(zplot,yplot1,'k',zplot,yplot2,'k')
+        
     end
     if angle == 30
         triangle = (2+sqrt(3))*(z+rd)-1-sqrt(3)*lz/2;
@@ -148,11 +144,9 @@ if geometry == 1 % triangle
         ztriangle = (0:100)/100; % reference
         ytriangle1 = (2+sqrt(3))*ztriangle-1-sqrt(3)*lz/2;
         ytriangle2 = -(2+sqrt(3))*ztriangle+1+sqrt(3)*lz/2;
-        zplot = 1+ztriangle*nz;
+        zplot = 1+ztriangle*(nz-1);
         yplot1 = 1+ytriangle1*(ny-1)/ly;
         yplot2 = 1+ytriangle2*(ny-1)/ly;
-        figure(1)
-        plot(zplot,yplot1,'k',zplot,yplot2,'k')
     end
     for k = 1:nz
         for j = 1:ny
@@ -163,6 +157,8 @@ if geometry == 1 % triangle
             end
         end
     end
+    figure(1)
+    plot(zplot,yplot1,'k',zplot,yplot2,'k')
 end
 
 if geometry == 2 % semi-circle    
@@ -202,7 +198,7 @@ if geometry == 3 % trapezium
 end
 
 if geometry == 4 % blade
-    for j = 1:round(0.5/ly*ny) %+1 if domain height > 0.5*lz
+    for j = 1:round(round(0.5/ly*ny)+round(rd/dy)) % domain height > 0.5*lz
         for k = 1:nz
             if z(k) <= 0.1*lz+rd+0.00001 || z(k) >= 0.9*lz-rd-0.00001
                 Sd(j,k) = 1;
@@ -211,6 +207,10 @@ if geometry == 4 % blade
             end
         end
     end
+    figure(1)
+    hold on
+    xline(0.1*lz*nz+1)
+    xline(nz-0.1*lz*nz+1)
 end
 
 %% Build Sc matrix - curve of the boundary
@@ -335,8 +335,8 @@ for j=2:ny-1
                     yp0 = 0;
                 end
                 if y0 <= height*lz
-                    zpPlus = 0.9*lz-0.0001;
-                    zpMinus = 0.1*lz+0.0001;
+                    zpPlus = 0.9*lz-0.00001;
+                    zpMinus = 0.1*lz+0.00001;
                 else
                     zpPlus = 0;
                     zpMinus = lz;
@@ -359,6 +359,7 @@ for j=2:ny-1
             if deltaz<dz
                 if round(deltaz,mz+2)~=0
                     zs(2-sign(deltazs))=z0-sign(deltazs)*deltaz;
+                    
                 end
             end           
             if deltay<dy
@@ -385,12 +386,12 @@ for j=2:ny-1
             if abs(deltaz)<dz 
                 if k==1
                     A(index,index+(nz-1)*ny) = bk(1);
-                    A(index,index+ny) = bk(3);
+                    A(index,index+ny) = 0; %bk(3);
                 elseif k==nz
                     A(index,index-ny) = bk(3);
-                    A(index,index-(nz-1)*ny) = bk(1);
+                    A(index,index-(nz-1)*ny) = 0; %bk(1);
                 else
-                    A(index,index-sign(deltazs)*ny) = bk(2-sign(deltazs));
+                    A(index,index-sign(deltazs)*ny) = 0; %bk(2-sign(deltazs));
                     A(index,index+sign(deltazs)*ny) = bk(2+sign(deltazs));
                 end
             end
@@ -448,7 +449,7 @@ fprintf('Virtual boundary at y = %f\n', boundary)
 
 figure(6)
 hold on
-plot(ums, y,'k','Linewidth',1.25)
+plot(ums,y,'k','Linewidth',1.25)
 plot(ums,y_line,'r','Linewidth',1.25)
 ylabel('$y$','Interpreter','Latex')
 xlabel('$\bar{u}$','Interpreter','Latex')
@@ -456,11 +457,11 @@ set(gca,'FontName','times','FontSize',15)
 
 % calculate and plot u profile under virtual origin
 n_o = round(boundary/ly*ny); % index of virtual origin
-u_0 = u(1:n_o,:);
+u_o = u(1:n_o,:);
 u_g = u(1:n_g,:);
 
 figure(7)
-surfc(z,y(1:n_o),u_0)
+surfc(z,y(1:n_o),u_o)
 title('u profile under virtual origin')
 
 %% calculate coefficients
@@ -471,14 +472,9 @@ u_surfg = u_g(end,:);
 G2_g = dz*trapz(full(u_surfg)) % integration in z at top layer
 
 % at virtual origin
-integraly = dy*trapz(full(u_0));
+integraly = dy*trapz(full(u_o));
 G1_o = dz*trapz(integraly)
-u_surf = u_0(end,:);
+u_surf = u_o(end,:);
 G2_o = dz*trapz(full(u_surf))
-
-if savefile == 1
-    tit = ['No_points_' num2str(ny) '_Shape_' num2str(shape) '.mat'];
-    save(tit,'ny','relError', 'relErrorint', 'integralz');
-end
 
 toc

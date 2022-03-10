@@ -11,20 +11,20 @@ tic
 
 %% Input data
 lz = 1; % always
-ly = 2; % always > height for periodic flow
+ly = 0.5; % always > height for periodic flow
 
 % Define grid sizes
-nz = 200; % number of points in periodic z (spanwise)
-ny = 201; % number of points y (wall-normal) domain is enclosed
+nz = 20; % number of points in periodic z (spanwise)
+ny = 21; % number of points y (wall-normal) domain is enclosed
 dy = ly/(ny-1); % length of sub-intervals in y-axis
 dz = lz/nz; % length of sub-intervals in z-axis
 y = (0:ny-1)/(ny-1)*ly;
-z = (0:nz-1)/nz;
+z = (0:nz-1)/nz*lz;
 
 dpdx = 0; % Pressure gradient
 Sx = 1; % Shear at the top, could set to 1 (if normalised, always 1)
 
-geometry = 1
+geometry = 2
 % 1 = triangle (k/s = 1+sqrt(3) for 30deg, 0.5 for 90deg, sqrt(3) for 60deg)
 % 2 = semi-circle (k/s = 0.5)
 % 3 = trapezium (k/s = 0.5; tip half-angle = 15deg)
@@ -38,7 +38,7 @@ S = zeros(ny,nz);
 if geometry == 1 % triangle
     if angle == 90        
         shape = 'triangle9';
-        height = 0.5;
+        height = 0.5*lz;
         triangle = z-lz/2+0.00001;
         triangle2 = -z+lz/2+0.00001;
     end
@@ -123,7 +123,7 @@ if geometry == 1 % triangle
         ztriangle = (0:100)/100; % reference
         ytriangle1 = ztriangle-lz/2+0.00001;
         ytriangle2 = -ztriangle+lz/2+0.00001;
-        zplot = 1+ztriangle*(nz-1);
+        zplot = 1+ztriangle*(nz-1)/lz;
         yplot1 = 1+ytriangle1*(ny-1)/ly;
         yplot2 = 1+ytriangle2*(ny-1)/ly;
     end
@@ -360,6 +360,8 @@ for j=2:ny-1
                 if round(deltaz,mz+2)~=0
                     zs(2-sign(deltazs))=z0-sign(deltazs)*deltaz;
                 end
+            else
+                Sc(i,j) = 0;
             end           
             if deltay<dy
                 if round(deltay,my+2)~=0 
@@ -456,11 +458,11 @@ set(gca,'FontName','times','FontSize',15)
 
 % calculate and plot u profile under virtual origin
 n_o = round(boundary/ly*ny); % index of virtual origin
-u_0 = u(1:n_o,:);
+u_o = u(1:n_o,:);
 u_g = u(1:n_g,:);
 
 figure(7)
-surfc(z,y(1:n_o),u_0)
+surfc(z,y(1:n_o),u_o)
 title('u profile under virtual origin')
 
 %% calculate coefficients
@@ -471,9 +473,9 @@ u_surfg = u_g(end,:);
 G2_g = dz*trapz(full(u_surfg)) % integration in z at top layer
 
 % at virtual origin
-integraly = dy*trapz(full(u_0));
+integraly = dy*trapz(full(u_o));
 G1_o = dz*trapz(integraly)
-u_surf = u_0(end,:);
+u_surf = u_o(end,:);
 G2_o = dz*trapz(full(u_surf))
 
 toc

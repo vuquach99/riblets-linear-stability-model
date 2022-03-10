@@ -8,8 +8,8 @@ s = 20; % s+ % should change to lg+
 
 %% Riblets coefficients
 % F1 = integration at (y=0,z); F2 = integration at (y,z)
-Lwp=((pi/256)^(1/3))*s;
-Lsp=((1/24)^(1/2))*s; 
+% Lwp=((pi/256)^(1/3))*s;
+% Lsp=((1/24)^(1/2))*s; 
 %% Triangular riblets
 % F1=0.004448936237952;
 % F2=0.020842780639986;
@@ -20,8 +20,8 @@ Lsp=((1/24)^(1/2))*s;
 % F1=0.0083;
 % F2=0.0229;
 %% Permeabilities expression 
-% Lwp=F1^(1/3)*s;
-% Lsp=F2^(1/2)*s;
+Lwp=F1^(1/3)*s;
+Lsp=F2^(1/2)*s;
 
 
 G1=0.1269;
@@ -33,9 +33,9 @@ Lsq=s*G2;
 Rtt=[550]';
 % Sweep through a range of wavelengths
 nosmod=256;%256%
-nx=50;
+nx=100;
 lxpmin=10;
-lxpmax=5000;
+lxpmax=1000;
 % For investigating a single wavelength value
 % nx= 1; % number of wavelengths
 % lxpmin=56;
@@ -97,6 +97,7 @@ end
 
 xlabel('\omega^+_R')
 ylabel('\omega^+_I')
+% set(gca,'Ylim',[-2 5])
 title('Orr-Sommerfeld spectrum')
 box on
 set(gca,'Fontn','Times','FontSize',14,'LineWidth',2)

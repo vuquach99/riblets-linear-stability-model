@@ -11,27 +11,25 @@ tic
 
 %% Input data
 lz = 1; % always
-ly = 0.5; % always <= height for pressure-driven flow
+ly = 0.360610010920238; % always <= height for pressure-driven flow
 
 % Define grid sizes
-nz = 31; % number of points in z
-ny = 15; % number of points in y
+nz = 201; % number of points in z
+ny = 201; % number of points in y
 dy = ly/(ny-1); % length of sub-intervals in y-axis
 dz = lz/(nz-1); % length of sub-intervals in z-axis
 y = (0:ny-1)/(ny-1)*ly;
-z = (0:nz-1)/(nz-1);
+z = (0:nz-1)/(nz-1)*lz;
 
 dpdx = -1; % Pressure gradient
 Sx = 0; % Shear at the top, could set to 1 (if normalised, always 1)
 
-geometry = 4; 
-% 1 = triangle (k/s = 1.866 for 30deg, 0.5 for 90deg, 0.866 for 60deg)
+geometry = 1
+% 1 = triangle (k/s = 1+sqrt(3) for 30deg, 0.5 for 90deg, sqrt(3) for 60deg)
 % 2 = semi-circle (k/s = 0.5)
 % 3 = trapezium (k/s = 0.5; tip half-angle = 15deg)
 % 4 = blade (k/s = 0.5; t/s = 0.2)
-angle = 30; % 30/60/90 degrees, for triangles only
-
-savefile = 0;
+angle = 90; % 30/60/90 degrees, for triangles only
 
 %% Build S matrix - Grid Points of riblets
 % S = 1 for points within and on boundary and = 0 elsewhere 
@@ -40,13 +38,13 @@ S = zeros(ny,nz);
 if geometry == 1 % triangle
     if angle == 90        
         shape = 'triangle9';
-        height = 0.5;
+        height = 0.5*lz;
         triangle = z-lz/2+0.00001;
         triangle2 = -z+lz/2+0.00001;
     end
     if angle == 60
         shape = 'triangle6';
-        height = sqrt(3)/2;
+        height = sqrt(3)*lz/2;
         triangle = sqrt(3)*z-sqrt(3)*lz/2;
         triangle2 = -sqrt(3)*z+sqrt(3)*lz/2;
     end
@@ -121,11 +119,9 @@ if geometry == 1 % triangle
         ztriangle = (0:100)/100; % reference
         ytriangle1 = ztriangle-lz/2+0.00001;
         ytriangle2 = -ztriangle+lz/2+0.00001;
-        zplot = 1+ztriangle*(nz-1);
+        zplot = 1+ztriangle*(nz-1)/lz;
         yplot1 = 1+ytriangle1*(ny-1)/ly;
         yplot2 = 1+ytriangle2*(ny-1)/ly;
-        figure(1)
-        plot(zplot,yplot1,'k',zplot,yplot2,'k')
     end
     if angle == 60
         triangle = sqrt(3)*(z+rd)-sqrt(3)*lz/2;
@@ -133,11 +129,10 @@ if geometry == 1 % triangle
         ztriangle = (0:100)/100; % reference
         ytriangle1 = sqrt(3)*ztriangle-sqrt(3)*lz/2;
         ytriangle2 = -sqrt(3)*ztriangle+sqrt(3)*lz/2;
-        zplot = 1+ztriangle*(nz-1);
+        zplot = 1+ztriangle*(nz-1)/lz;
         yplot1 = 1+ytriangle1*(ny-1)/ly;
         yplot2 = 1+ytriangle2*(ny-1)/ly;
-        figure(1)
-        plot(zplot,yplot1,'k',zplot,yplot2,'k')
+        
     end
     if angle == 30
         triangle = (2+sqrt(3))*(z+rd)-1-sqrt(3)*lz/2;
@@ -148,8 +143,6 @@ if geometry == 1 % triangle
         zplot = 1+ztriangle*(nz-1);
         yplot1 = 1+ytriangle1*(ny-1)/ly;
         yplot2 = 1+ytriangle2*(ny-1)/ly;
-        figure(1)
-        plot(zplot,yplot1,'k',zplot,yplot2,'k')
     end
     for k = 1:nz
         for j = 1:ny
@@ -160,6 +153,8 @@ if geometry == 1 % triangle
             end
         end
     end
+    figure(1)
+    plot(zplot,yplot1,'k',zplot,yplot2,'k')
 end
 
 if geometry == 2 % semi-circle    
@@ -196,7 +191,7 @@ if geometry == 3 % trapezium
 end
 
 if geometry == 4 % blade
-    for j = 1:round(0.5/ly*ny) %+1 if domain height > 0.5*lz
+    for j = 1:round(0.5/ly*ny)
         for k = 1:nz
             if z(k) <= 0.1*lz+rd+0.00001 || z(k) >= 0.9*lz-rd-0.00001
                 Sd(j,k) = 1;
@@ -205,6 +200,10 @@ if geometry == 4 % blade
             end
         end
     end
+    figure(1)
+    hold on
+    xline(0.1*lz*nz+1)
+    xline(nz-0.1*lz*nz)
 end
 
 %% Build Sc matrix - curve of the boundary
@@ -329,8 +328,8 @@ for j=2:ny-1
                     yp0 = 0;
                 end
                 if y0 <= height*lz
-                    zpPlus = 0.9*lz-0.0001;
-                    zpMinus = 0.1*lz+0.0001;
+                    zpPlus = 0.9*lz-0.00001;
+                    zpMinus = 0.1*lz+0.00001;
                 else
                     zpPlus = 0;
                     zpMinus = lz;
@@ -419,13 +418,7 @@ xlabel('z')
 %% calculate coefficients
 integraly = dy*trapz(full(u)); % integrate u*dy with z constant
 F1 = dz*trapz(integraly) % integration in y and z
-
 u_surf = u(end,:);
 F2 = dz*trapz(full(u_surf)) % integration in z at top layer
-
-if savefile == 1
-    tit = ['No_points_' num2str(ny) '_Shape_' num2str(shape) '.mat'];
-    save(tit,'ny','relError', 'relErrorint', 'integralz');
-end
 
 toc
