@@ -1,4 +1,6 @@
 %% Programme to solve for Stokes velocity profile in riblets
+% Zero shear at the interface, non-zero pressure gradient
+% Tests convergence in number of points
 % Solve A*u = P
 % S = riblets grid points
 % P = pressure gradient
@@ -15,236 +17,410 @@ ly = 0.5;
 lz = 1;
 error_hist = [];
 n_hist = [];
+F1_hist = [];
+F2_hist = [];
 
 % Define grid sizes
-for n = 5:1:30
-    n_hist(end+1) = n;
-    ny = n; % number of points y (wall-normal) domain is enclosed
-    nz = 2*n; % number of points in z (spanwise) % periodic in z-direction
-    dy = ly/(ny-1); % length of sub-intervals in y-axis
-    dz = lz/(nz-1); % length of sub-intervals in z-axis
-    z = linspace(0,lz,nz);
-    y = linspace(0,ly,ny);
+for n = 10:1:200
+n_hist(end+1) = n;
+% Define grid sizes
+nz = n+1 % number of points in z
+ny = n+1; % number of points in y
+dy = ly/(ny-1); % length of sub-intervals in y-axis
+dz = lz/(nz-1); % length of sub-intervals in z-axis
+y = (0:ny-1)/(ny-1)*ly;
+z = (0:nz-1)/(nz-1)*lz;
 
-    dpdx = -1; % Pressure gradient
-    Sx = 0; % Shear at the top, could set to 1 (if normalised, always 1)
+dpdx = -1; % Pressure gradient
+Sx = 0; % Shear at the top, could set to 1 (if normalised, always 1)
 
-    geometry = 2; % 0 = parabola, 1 = triangle, 2 = semi-circle
-    savefile = 0;
+geometry = 2;
+% 1 = triangle (k/s = 1+sqrt(3) for 30deg, 0.5 for 90deg, sqrt(3) for 60deg)
+% 2 = semi-circle (k/s = 0.5)
+% 3 = trapezium (k/s = 0.5; tip half-angle = 15deg)
+% 4 = blade (k/s = 0.5; t/s = 0.2)
+angle = 90; % 30/60/90 degrees, for triangles only
 
-    %% Build S matrix - Grid Points of riblets
-    % S = 1 for points within and on boundary and = 0 elsewhere 
-    S = zeros(ny,nz);
-    circle = (-sqrt((lz/2)^2-(z-lz/2).^2))+lz/2;
+%% Build S matrix - Grid Points of riblets
+% S = 1 for points within and on boundary and = 0 elsewhere 
+S = zeros(ny,nz);
+
+if geometry == 1 % triangle
+    if angle == 90        
+        shape = 'triangle9';
+        height = 0.5*lz;
+        triangle = z-lz/2+0.00001;
+        triangle2 = -z+lz/2+0.00001;
+    end
+    if angle == 60
+        shape = 'triangle6';
+        height = sqrt(3)*lz/2;
+        triangle = sqrt(3)*z-sqrt(3)*lz/2;
+        triangle2 = -sqrt(3)*z+sqrt(3)*lz/2;
+    end
+    if angle == 30
+        shape = 'triangle3';
+        height = (1+sqrt(3))*lz/2;
+        triangle = (2+sqrt(3))*z-1-sqrt(3)*lz/2;
+        triangle2 = -(2+sqrt(3))*z+1+sqrt(3)*lz/2;
+    end
+        for k = 1:nz
+            for j = 1:ny
+                if y(j) <= triangle(k) || y(j) <= triangle2(k)
+                    S(j,k) = 1;
+                else
+                    S(j,k) = 0;
+                end
+            end
+        end
+end
+
+if geometry == 2 % semi-circle
     shape = 'circle';
-    for k = 1:nz
-        for j = 1:ny
-            if y(j)<circle(k)
+    height = 0.5;
+    circle = (y'*ones(1,nz)-lz/2).^2+(ones(ny,1)*z-lz/2).^2-(lz/2)^2;
+    S = sign((sign(circle)+1)/2);    
+end
+
+if geometry == 3 % trapezium
+    shape = 'trapezium';
+    height = 0.5;
+    trapezium = (4+2*sqrt(3))*z-3.5-2*sqrt(3);
+    trapezium2 = -(4+2*sqrt(3))*z+0.5;
+    for k=1:nz
+        for j=1:ny
+            if y(j) <= trapezium(k) || y(j) <= trapezium2(k)
+                S(j, k) = 1;
+            else
+                S(j, k) = 0;
+            end
+        end
+    end
+end
+
+if geometry == 4 % blade
+    shape = 'blade';
+    height = 0.5;
+    for j = 1:round(0.5/ly*ny)
+        for k = 1:nz
+            if z(k) <= 0.1*lz || z(k) >= 0.9*lz
                 S(j,k) = 1;
             else
                 S(j,k) = 0;
             end
         end
     end
+end
 
-    %% Build Sd matrix
-    % Sd = 1 for points within and on boundary and = 0 elsewhere 
-    % riblets now bigger by d = max(dy,dz)
-    Sd = zeros(ny,nz);
+%% Build Sd matrix
+% Sd = 1 for points within and on boundary and = 0 elsewhere 
+% riblets now bigger by rd = max(dy,dz)
+rd = max(dy,dz);
+Sd = zeros(ny,nz);
 
-    circle = (-sqrt((lz/2)^2-(z-lz/2).^2))+lz/2+dy;
+if geometry == 1 % triangle
+    if angle == 90
+        triangle = z+rd-lz/2+0.00001;
+        triangle2 = -z+rd+lz/2+0.00001;
+        zpl = (0:100)/100; % reference
+        ypl1 = zpl-lz/2+0.00001;
+        ypl2 = -zpl+lz/2+0.00001;
+        zplot = 1+zpl*(nz-1)/lz;
+        yplot1 = 1+ypl1*(ny-1)/ly;
+        yplot2 = 1+ypl2*(ny-1)/ly;
+    end
+    if angle == 60
+        triangle = sqrt(3)*(z+rd)-sqrt(3)*lz/2;
+        triangle2 = -sqrt(3)*(z-rd)+sqrt(3)*lz/2;        
+        zpl = (0:100)/100; % reference
+        ypl1 = sqrt(3)*zpl-sqrt(3)*lz/2;
+        ypl2 = -sqrt(3)*zpl+sqrt(3)*lz/2;
+        zplot = 1+zpl*(nz-1)/lz;
+        yplot1 = 1+ypl1*(ny-1)/ly;
+        yplot2 = 1+ypl2*(ny-1)/ly;
+        
+    end
+    if angle == 30
+        triangle = (2+sqrt(3))*(z+rd)-1-sqrt(3)*lz/2;
+        triangle2 = -(2+sqrt(3))*(z-rd)+1+sqrt(3)*lz/2;
+        zpl = (0:100)/100; % reference
+        ypl1 = (2+sqrt(3))*zpl-1-sqrt(3)*lz/2;
+        ypl2 = -(2+sqrt(3))*zpl+1+sqrt(3)*lz/2;
+        zplot = 1+zpl*(nz-1)/lz;
+        yplot1 = 1+ypl1*(ny-1)/ly;
+        yplot2 = 1+ypl2*(ny-1)/ly;
+    end
     for k = 1:nz
         for j = 1:ny
-            if y(j)<circle(k)
+            if y(j) <= triangle(k) || y(j) <= triangle2(k)
                 Sd(j,k) = 1;
             else
                 Sd(j,k) = 0;
             end
         end
     end
+end
 
-    %% Build Sc matrix - curve of the boundary
-    Sc = Sd-S;
+if geometry == 2 % semi-circle    
+    circled = (y'*ones(1,nz)-lz/2).^2+(ones(ny,1)*z-lz/2).^2-(lz/2-rd)^2;
+    Sd = sign((sign(circled)+1)/2);
+    zpl = (0:100)/100; % reference
+    ypl = (-sqrt((lz/2)^2-(zpl-lz/2).^2))+lz/2;
+    zplot = 1+zpl*(nz-1)/lz;
+    yplot = 1+ypl*(ny-1)/ly;
+end
 
-    %% Build P matrix - pressure gradient - RHS of Stokes
-    P = ones(ny*nz,1);
-    P = sparse(P);
-    P = P*dpdx;
-
-    %% Build A matrix 
-    beta = -2/(dy^2)-2/(dz^2); % coefficient of point p
-    alpha = 1/(dy^2); % coefficient of surrounding points
-    r1 = beta.*ones(ny,1);
-    r2 = alpha.*ones(ny-1,1);
-    r3 = alpha.*ones(1,1);
-    B = diag(r1,0) + diag(r2,1) + diag(r2,-1) + diag(r3,-ny+1) + diag(r3,ny-1);
-    B = sparse(B);
-    C = kron(eye(nz),B);
-    C = sparse(C);
-    gamma = 1/(dz^2);
-    r4 = gamma.*ones(ny*nz-ny,1);
-    r5 = gamma.*ones(ny,1);
-    D = diag(r4,-ny)+diag(r4,+ny)+diag(r5,-ny*nz+ny)+diag(r5,ny*nz-ny);
-    D = sparse(D);
-    A = C+D;
-    A = sparse(A);
-
-    %% Shear at the top condition
-    for k = 1:nz
-        j = ny; % top of domain
-        index = (k-1)*ny+j;
-        A(index,:) = 0;
-        A(index,index) = 1/dy^2; % should be dy, but P(index) changed as well
-        if index~=1
-            A(index,index-1) = -1/dy^2;
-        end   
-        P(index) = Sx/dy;
-    end
-
-    %% Solid condition - modify the A matrix
-    % Modify A and P matrix for points within and on the boundary of riblets
-    % Velocity inside riblets = 0
-    for j = 1:ny
-        for k = 1:nz
-            if S(j,k) == 1
-                index = (k-1)*ny+j;
-                A(index,:) = 0;
-                A(index,index) = 1/dy^2;
-                P(index) = 0;
+if geometry == 3 % trapezium
+    trapezium = (4+2*sqrt(3))*(z+rd)-3.5-2*sqrt(3);
+    trapezium2 = -(4+2*sqrt(3))*(z-rd)+0.5;
+    zpl = (0:100)/100; % reference
+    ypl1 = (4+2*sqrt(3))*zpl-3.5-2*sqrt(3);
+    ypl2 = -(4+2*sqrt(3))*zpl+0.5;
+    zplot = 1+zpl*(nz-1)/lz;
+    yplot1 = 1+ypl1*(ny-1)/ly;
+    yplot2 = 1+ypl2*(ny-1)/ly;
+    for k=1:nz
+        for j=1:ny
+            if y(j) <= trapezium(k) || y(j) <= trapezium2(k)
+                Sd(j, k) = 1;
+            else
+                Sd(j, k) = 0;
             end
         end
     end
+end
 
-    %% Modify the A matrix - curve of the boundary
-    % Modification of the matrix A near the boundary of the solid
-    for j=1:ny
-        for k=1:nz
-            if Sc(j,k) == 1
-                y0 = (j-ny)*dy;
-                z0 = k*dz ;          
-                my = abs(floor(log10(dy)));
-                mz = abs(floor(log10(dz)));
+if geometry == 4 % blade
+    for j = 1:round(0.5/ly*ny)
+        for k = 1:nz
+            if z(k) <= 0.1*lz+rd+0.00001 || z(k) >= 0.9*lz-rd-0.00001
+                Sd(j,k) = 1;
+            else
+                Sd(j,k) = 0;
+            end
+        end
+    end
+end
 
-            %ys: (j-+2,k);(j-+1,k);(j,k-+2);(j,k-+1) 
-                ys=[y0-dy, y0, y0+dy];
-                zs=[z0-dz, z0, z0+dz];
+%% Build Sc matrix - curve of the boundary
+Sc = Sd-S;
 
-                yp0=-(-sqrt((lz/2)^2-(z0-lz/2).^2))+ly;
-                zpPlus=sqrt((lz/2)^2-(y0-ly).^2)+lz/2;
-                zpMinus=-zpPlus;
+%% Build P matrix - pressure gradient - RHS of Stokes
+P = ones(ny*nz,1);
+P = sparse(P);
+P = P*dpdx;
 
-                % check closest distance in z direction               
-                if abs(z0-zpPlus) < abs(z0 - zpMinus)
-                    zp0 = zpPlus;
-                else
-                    zp0 = zpMinus;
+%% Build A matrix 
+beta = -2/(dy^2)-2/(dz^2); % coefficient of point p
+alpha = 1/(dy^2); % coefficient of surrounding points
+r1 = beta.*ones(ny,1);
+r2 = alpha.*ones(ny-1,1);
+r3 = alpha.*ones(1,1);
+B = diag(r1,0) + diag(r2,1) + diag(r2,-1) + diag(r3,-ny+1) + diag(r3,ny-1);
+B = sparse(B);
+C = kron(eye(nz),B);
+C = sparse(C);
+gamma = 1/(dz^2);
+r4 = gamma.*ones(ny*nz-ny,1);
+r5 = gamma.*ones(ny,1);
+D = diag(r4,-ny)+diag(r4,+ny)+diag(r5,-ny*nz+ny)+diag(r5,ny*nz-ny);
+D = sparse(D);
+A = C+D;
+A = sparse(A);
+
+%% Shear at the top condition
+for k = 1:nz
+    j = ny; % top of domain
+    index = (k-1)*ny+j;
+    A(index,:) = 0;
+    A(index,index) = 1/dy^2; % should be dy, but P(index) changed as well
+    if index~=1
+        A(index,index-1) = -1/dy^2;
+    end   
+    P(index) = Sx/dy;
+end
+
+%% Modify the A matrix - curve of the boundary
+% Modification of the matrix A near the boundary of the solid
+for j=2:ny-1
+    for k=2:nz-1
+        if Sc(j,k) == 1
+            y0 = y(j);
+            z0 = z(k);          
+            my = abs(floor(log10(dy)));
+            mz = abs(floor(log10(dz)));
+            
+        %ys: (j-+2,k);(j-+1,k);(j,k-+2);(j,k-+1) 
+            ys = y(j-1:j+1);
+            zs = z(k-1:k+1);  
+            
+            if geometry == 1 % triangle
+                if angle == 90
+                    if z0 <= lz/2
+                        yp0 = -z0+lz/2;
+                    else
+                        yp0 = z0-lz/2;
+                    end
+                    zpPlus = y0+lz/2;
+                    zpMinus = -y0+lz/2;
                 end
-
-                % Modify ys: (j-+2,k),(j-+1,k),(j,k-+2),(j,k-+1)         
-                deltay=round(abs(y0-yp0),10);
-                deltays=y0-yp0;
-                deltaz=round(abs(z0-zp0),10);
-                deltazs=z0-zp0;
-
-                if deltaz<dz
+                if angle == 60
+                    if z0 <= lz/2
+                        yp0 = -sqrt(3)*z0+sqrt(3)*lz/2;
+                    else
+                        yp0 = sqrt(3)*z0-sqrt(3)*lz/2;
+                    end
+                    zpPlus = y0/sqrt(3)+lz/2;
+                    zpMinus = -y0/sqrt(3)+lz/2;
+                end
+                if angle == 30
+                    if z0 <= lz/2
+                        yp0 = (2+sqrt(3))*z0-1-sqrt(3)*lz/2;
+                    else
+                        yp0 = -(2+sqrt(3))*z0+1+sqrt(3)*lz/2;
+                    end
+                    zpPlus = y0/(2+sqrt(3))+(1+sqrt(3)*lz/2)/(2+sqrt(3));
+                    zpMinus = -y0/(2+sqrt(3))+(1+sqrt(3)*lz/2)/(2+sqrt(3));
+                end
+            end
+            
+            if geometry == 2 % semi-circle
+                yp0 = -sqrt((lz/2)^2-(z0-lz/2).^2)+lz/2;
+                zpPlus = sqrt((lz/2)^2-(y0-lz/2).^2)+lz/2;
+                zpMinus = -sqrt((lz/2)^2-(y0-lz/2).^2)+lz/2;
+            end
+            
+            if geometry == 3 % trapezium
+                if z0 <= lz/2
+                    yp0 = -(4+2*sqrt(3))*z0+0.5;
+                else
+                    yp0 = (4+2*sqrt(3))*z0-3.5-2*sqrt(3);
+                end
+                zpPlus = (3.5+2*sqrt(3)+y0)/(4+2*sqrt(3));
+                zpMinus = (0.5-y0)/(4+2*sqrt(3));
+            end
+            
+            if geometry == 4 % blade
+                if z0 <= 0.1*lz || z0 >= 0.9*lz
+                    yp0 = height*lz;
+                else
+                    yp0 = 0;
+                end
+                if y0 <= height*lz
+                    zpPlus = 0.9*lz-0.00001;
+                    zpMinus = 0.1*lz+0.00001;
+                else
+                    zpPlus = 0;
+                    zpMinus = lz;
+                end                
+            end
+            
+            % check closest distance in z direction               
+            if abs(z0-zpPlus) < abs(z0 - zpMinus)
+                zp0 = zpPlus;
+            else
+                zp0 = zpMinus;
+            end
+            
+            % Modify ys: (j-+2,k),(j-+1,k),(j,k-+2),(j,k-+1)         
+            deltay=round(abs(y0-yp0),10);
+            deltays=y0-yp0;
+            deltaz=round(abs(z0-zp0),10);
+            deltazs=z0-zp0;
+            
+            if deltaz >= dz && deltay >= dy
+                Sc(j,k) = 0;           
+            else
+                if deltaz < dz                    
                     if round(deltaz,mz+2)~=0
                         zs(2-sign(deltazs))=z0-sign(deltazs)*deltaz;
+                    else
+                        S(j,k) = 1;
                     end
                 end           
-                if deltay<dy
+                if deltay < dy 
                     if round(deltay,my+2)~=0 
-                        ys(2-sign(deltays))=y0-sign(deltays)*deltay;                     
-                    end
-                end 
-
-                bj=zeros(1,3);
-                bk=zeros(1,3);          
-                bj(1)=2/((ys(2)-ys(1))*(ys(3)-ys(1)));
-                bj(2)=-2/((ys(3)-ys(2))*(ys(2)-ys(1))); 
-                bj(3)=2/((ys(3)-ys(2))*(ys(3)-ys(1)));
-                bk(1)=2/((zs(2)-zs(1))*(zs(3)-zs(1)));
-                bk(2)=-2/((zs(3)-zs(2))*(zs(2)-zs(1))); 
-                bk(3)=2/((zs(3)-zs(2))*(zs(3)-zs(1)));  
-
-                index =(k-1)*ny+j;
-                A(index,index)= bj(2) + bk(2);        
-                if abs(deltay)<dy           
-                    if j==1
-                      A(index,index+ny-1)= bj(1);
-                      A(index,index+1)= 0;
-
-                    elseif j==ny
-                      A(index,index-ny+1)= bj(3);
-                      A(index,index-1)= 0;
-
+                        ys(2-sign(deltays))=y0-sign(deltays)*deltay;
                     else
-                      A(index,index-sign(deltays))=0;       
-                      A(index,index+sign(deltays))= bj(2+sign(deltays));
-
-                    end
-                end                      
-                if abs(deltaz)<dz 
-                    if k==1
-                      A(index,index+(nz-1)*ny)= bk(1);
-                      A(index,index+ny)= bk(3);
-                    elseif k==nz
-                      A(index,index-ny)= bk(3);
-                      A(index,index-(nz-1)*ny)= bk(1);
-                    else
-                      A(index,index-sign(deltazs)*ny)= bk(2-sign(deltazs));
-                      A(index,index+sign(deltazs)*ny)= bk(2+sign(deltazs));
+                        S(j,k) = 1;
                     end
                 end
             end
+            
+            bj=zeros(1,3);
+            bk=zeros(1,3);          
+            bj(1)=2/((ys(2)-ys(1))*(ys(3)-ys(1)));
+            bj(2)=-2/((ys(3)-ys(2))*(ys(2)-ys(1))); 
+            bj(3)=2/((ys(3)-ys(2))*(ys(3)-ys(1)));
+            bk(1)=2/((zs(2)-zs(1))*(zs(3)-zs(1)));
+            bk(2)=-2/((zs(3)-zs(2))*(zs(2)-zs(1))); 
+            bk(3)=2/((zs(3)-zs(2))*(zs(3)-zs(1)));  
+            
+            index =(k-1)*ny+j;
+            A(index,index) = bj(2) + bk(2);        
+            if abs(deltay)<dy           
+              A(index,index-sign(deltays))=0;       
+              A(index,index+sign(deltays))= bj(2+sign(deltays));
+            end                      
+            if abs(deltaz)<dz 
+              A(index,index-sign(deltazs)*ny)= bk(2-sign(deltazs));
+              A(index,index+sign(deltazs)*ny)= bk(2+sign(deltazs));
+            end
         end
     end
-
-    %% No slip at bottom condition
-    for k = 1:nz
-        j = 1;
-        index = (k-1)*ny+j ;
-        A(index,:) = 0;
-        A(index,index) = 1/dy^2;
-        P(index)=0;
-    end
-
-    %% Solution
-    u = reshape(mldivide(A,P),ny,nz);
-    Ub = mean(mean(u));
-    % Lws=Ub/s;
-    % daspect([1 1 1])
-    % axis tight
-    % axis fill
-    % axis image
-    % us = [zeros(1,nz); u];
-    us = [u(:,end) u];
-
-    %% Analytical solution for semi-circlular riblets
-    % Used to validate results
-    za = linspace(0,lz,nz);
-    ya = linspace(0,ly,ny);
-    nu = 1;
-    R = lz/2;
-    index = logical(S);
-    for j=1:length(ya)
-        for k=1:length(za)
-            f(j,k)=0.25*(R^2-((ya(j)-ly)^2+(za(k)-lz/2)^2));
-    %         fr(j,k)=0.25*(R^2-((ya(j))^2+(za(k))^2));
-        end
-    end
-    Ubmaen=mean(mean(f));
-    % Ubmaenr=mean(mean(fr));
-    ua=-1/nu*dpdx*f;
-    ua(index)=0;
-    umax=max(max(ua));
-    umaxmax=max(max(u));
-
-    %% Verify
-    error = (abs(lz^2/4 - max(u(:))*4))*100/(lz^2/4) % percentage error
-    error_hist(end+1) = error;
 end
-figure
-semilogy(n_hist, error_hist)
-ylabel('Percentage error')
+
+%% Solid condition - modify the A matrix
+% Modify A and P matrix for points within and on the boundary of riblets
+% Velocity inside riblets = 0
+for j = 1:ny
+    for k = 1:nz
+        if S(j,k) == 1
+            index = (k-1)*ny+j;
+            A(index,:) = 0;
+            A(index,index) = 1/dy^2;
+            P(index) = 0;
+        end
+    end
+end
+
+%% No slip at bottom condition
+for k = 1:nz
+    j = 1;
+    index = (k-1)*ny+j;
+    A(index,:) = 0;
+    A(index,index) = 1/dy^2;
+    P(index)=0;
+end
+
+%% Solution
+u = mldivide(A,P);
+u = reshape(u,ny,nz); % converts u into size (ny,nz)
+
+%% calculate coefficients
+integraly = dy*trapz(full(u)); % integrate u*dy with z constant
+F1 = dz*trapz(integraly); % integration in y and z
+F1_hist(end+1) = F1;
+u_surf = u(end,:);
+F2 = dz*trapz(full(u_surf)); % integration in z at top layer
+F2_hist(end+1) = F2;
+
+%% Verify
+error = (max(u(:))*4-lz^2/4)*100/(lz^2/4); % percentage error
+error_hist(end+1) = error;
+end
+figure(1)
+plot(n_hist, error_hist)
+ylabel('Percentage error u')
+xlabel('Number or points in y')
+
+figure(2)
+plot(n_hist, (F1_hist-0.012271846303085)*100/0.012271846303085)
+ylabel('Percentage error F1')
+xlabel('Number or points in y')
+
+figure(3)
+plot(n_hist, (F2_hist-0.041666666666667)*100/0.041666666666667)
+ylabel('Percentage error F2')
 xlabel('Number or points in y')
 toc

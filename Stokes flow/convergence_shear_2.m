@@ -1,4 +1,6 @@
 %% Programme to solve for Stokes velocity profile in riblets
+% Non-zero shear at the interface, zero pressure gradient
+% Tests convergence in domain height
 % Solve A*u = P
 % S = riblets grid points
 % P = pressure gradient
@@ -13,31 +15,32 @@ tic
 % Sides of the periodic-in-z domain
 lz = 1;
 
-u_max_hist = [];
 a_hist = [];
 h_hist = [];
+G1_hist = [];
+G2_hist = [];
 
 % Define grid sizes
-for ly = 1:0.5:4 % aspect ratio ly:lz
+for ly = 0.5:0.5:4 % aspect ratio ly:lz
     
 a_hist(end+1) = ly;
 % Define grid sizes
-nz = 50; % number of points in periodic z (spanwise)
-ny = 50*ly+1; % number of points y (wall-normal) domain is enclosed
+nz = 100; % number of points in periodic z (spanwise)
+ny = 101; % number of points y (wall-normal) domain is enclosed
 dy = ly/(ny-1); % length of sub-intervals in y-axis
 dz = lz/nz; % length of sub-intervals in z-axis
 y = (0:ny-1)/(ny-1)*ly;
-z = (0:nz-1)/nz;
+z = (0:nz-1)/nz*lz;
 
 dpdx = 0; % Pressure gradient
 Sx = 1; % Shear at the top, could set to 1 (if normalised, always 1)
 
-geometry = 2; 
-% 1 = triangle (k/s = 1.866 for 30deg, 0.5 for 90deg, 0.866 for 60deg)
+geometry = 2
+% 1 = triangle (k/s = 1+sqrt(3) for 30deg, 0.5 for 90deg, sqrt(3) for 60deg)
 % 2 = semi-circle (k/s = 0.5)
 % 3 = trapezium (k/s = 0.5; tip half-angle = 15deg)
 % 4 = blade (k/s = 0.5; t/s = 0.2)
-angle = 60; % 30/60/90 degrees, for triangles only
+angle = 90; % 30/60/90 degrees, for triangles only
 
 %% Build S matrix - Grid Points of riblets
 % S = 1 for points within and on boundary and = 0 elsewhere 
@@ -46,19 +49,19 @@ S = zeros(ny,nz);
 if geometry == 1 % triangle
     if angle == 90        
         shape = 'triangle9';
-        height = 0.5;
+        height = 0.5*lz;
         triangle = z-lz/2+0.00001;
         triangle2 = -z+lz/2+0.00001;
     end
     if angle == 60
         shape = 'triangle6';
-        height = sqrt(3)/2;
+        height = sqrt(3)*lz/2;
         triangle = sqrt(3)*z-sqrt(3)*lz/2;
         triangle2 = -sqrt(3)*z+sqrt(3)*lz/2;
     end
     if angle == 30
         shape = 'triangle3';
-        height = 1 + sqrt(3)/2;
+        height = (1+sqrt(3))*lz/2;
         triangle = (2+sqrt(3))*z-1-sqrt(3)*lz/2;
         triangle2 = -(2+sqrt(3))*z+1+sqrt(3)*lz/2;
     end
@@ -91,9 +94,9 @@ if geometry == 3 % trapezium
     for k=1:nz
         for j=1:ny
             if y(j) <= trapezium(k) || y(j) <= trapezium2(k)
-                S(j, k) = 1;
+                S(j,k) = 1;
             else
-                S(j, k) = 0;
+                S(j,k) = 0;
             end
         end
     end
@@ -119,36 +122,38 @@ end
 rd = max(dy,dz);
 Sd = zeros(ny,nz);
 n_g = round(height/ly*ny); % index at riblet surface
+
 if geometry == 1 % triangle
     if angle == 90
         triangle = z+rd-lz/2+0.00001;
         triangle2 = -z+rd+lz/2+0.00001;
-        ztriangle = (0:100)/100; % reference
-        ytriangle1 = ztriangle-lz/2+0.00001;
-        ytriangle2 = -ztriangle+lz/2+0.00001;
-        zplot = 1+ztriangle*nz;
-        yplot1 = 1+ytriangle1*(ny-1)/ly;
-        yplot2 = 1+ytriangle2*(ny-1)/ly;
+        zpl = (0:100)/100; % reference
+        ypl1 = zpl-lz/2+0.00001;
+        ypl2 = -zpl+lz/2+0.00001;
+        zplot = 1+zpl*nz/lz;
+        yplot1 = 1+ypl1*(ny-1)/ly;
+        yplot2 = 1+ypl2*(ny-1)/ly;
     end
     if angle == 60
         triangle = sqrt(3)*(z+rd)-sqrt(3)*lz/2;
         triangle2 = -sqrt(3)*(z-rd)+sqrt(3)*lz/2;        
-        ztriangle = (0:100)/100; % reference
-        ytriangle1 = sqrt(3)*ztriangle-sqrt(3)*lz/2;
-        ytriangle2 = -sqrt(3)*ztriangle+sqrt(3)*lz/2;
-        zplot = 1+ztriangle*nz;
-        yplot1 = 1+ytriangle1*(ny-1)/ly;
-        yplot2 = 1+ytriangle2*(ny-1)/ly;
+        zpl = (0:100)/100; % reference
+        ypl1 = sqrt(3)*zpl-sqrt(3)*lz/2;
+        ypl2 = -sqrt(3)*zpl+sqrt(3)*lz/2;
+        zplot = 1+zpl*nz/lz;
+        yplot1 = 1+ypl1*(ny-1)/ly;
+        yplot2 = 1+ypl2*(ny-1)/ly;
+        
     end
     if angle == 30
         triangle = (2+sqrt(3))*(z+rd)-1-sqrt(3)*lz/2;
         triangle2 = -(2+sqrt(3))*(z-rd)+1+sqrt(3)*lz/2;
-        ztriangle = (0:100)/100; % reference
-        ytriangle1 = (2+sqrt(3))*ztriangle-1-sqrt(3)*lz/2;
-        ytriangle2 = -(2+sqrt(3))*ztriangle+1+sqrt(3)*lz/2;
-        zplot = 1+ztriangle*nz;
-        yplot1 = 1+ytriangle1*(ny-1)/ly;
-        yplot2 = 1+ytriangle2*(ny-1)/ly;
+        zpl = (0:100)/100; % reference
+        ypl1 = (2+sqrt(3))*zpl-1-sqrt(3)*lz/2;
+        ypl2 = -(2+sqrt(3))*zpl+1+sqrt(3)*lz/2;
+        zplot = 1+zpl*nz/lz;
+        yplot1 = 1+ypl1*(ny-1)/ly;
+        yplot2 = 1+ypl2*(ny-1)/ly;
     end
     for k = 1:nz
         for j = 1:ny
@@ -167,23 +172,21 @@ if geometry == 2 % semi-circle
     for j = n_g+1:ny
         Sd(j,:) = 0;
     end
-    zcircle = (0:100)/100; % reference
-    ycircle = (-sqrt((lz/2)^2-(zcircle-lz/2).^2))+lz/2;
-    zplot = 1+zcircle*nz;
-    yplot = 1+ycircle*(ny-1)/ly;
+    zpl = (0:100)/100; % reference
+    ypl = (-sqrt((lz/2)^2-(zpl-lz/2).^2))+lz/2;
+    zplot = 1+zpl*nz/lz;
+    yplot = 1+ypl*(ny-1)/ly;
 end
 
 if geometry == 3 % trapezium
     trapezium = (4+2*sqrt(3))*(z+rd)-3.5-2*sqrt(3);
     trapezium2 = -(4+2*sqrt(3))*(z-rd)+0.5;
-    ztrap = (0:100)/100; % reference
-    ytrap = (4+2*sqrt(3))*ztrap-3.5-2*sqrt(3);
-    ytrap2 = -(4+2*sqrt(3))*ztrap+0.5;
-    zplot = 1+ztrap*nz;
-    yplot1 = 1+ytrap*(ny-1)/ly;
-    yplot2 = 1+ytrap2*(ny-1)/ly;
-    figure(1)
-    plot(zplot,yplot1,'k',zplot,yplot2,'k')
+    zpl = (0:100)/100; % reference
+    ypl1 = (4+2*sqrt(3))*zpl-3.5-2*sqrt(3);
+    ypl2 = -(4+2*sqrt(3))*zpl+0.5;
+    zplot = 1+zpl*nz/lz;
+    yplot1 = 1+ypl1*(ny-1)/ly;
+    yplot2 = 1+ypl2*(ny-1)/ly;
     for k=1:nz
         for j=1:ny
             if y(j) <= trapezium(k) || y(j) <= trapezium2(k)
@@ -196,7 +199,7 @@ if geometry == 3 % trapezium
 end
 
 if geometry == 4 % blade
-    for j = 1:round(0.5/ly*ny) %+1 if domain height > 0.5*lz
+    for j = 1:round(round(0.5/ly*ny)+round(rd/dy)) % domain height > 0.5*lz
         for k = 1:nz
             if z(k) <= 0.1*lz+rd+0.00001 || z(k) >= 0.9*lz-rd-0.00001
                 Sd(j,k) = 1;
@@ -245,20 +248,6 @@ for k = 1:nz
     P(index) = Sx/dy;
 end
 
-%% Solid condition - modify the A matrix
-% Modify A and P matrix for points within and on the boundary of riblets
-% Velocity inside riblets = 0
-for j = 1:ny
-    for k = 1:nz
-        if S(j,k) == 1
-            index = (k-1)*ny+j;
-            A(index,:) = 0;
-            A(index,index) = 1/dy^2;
-            P(index) = 0;
-        end
-    end
-end
-
 %% Modify the A matrix - curve of the boundary
 % Modification of the matrix A near the boundary of the solid
 for j=2:ny-1
@@ -304,7 +293,7 @@ for j=2:ny-1
             end
             
             if geometry == 2 % semi-circle
-                yp0 = sqrt((lz/2)^2-(z0-lz/2).^2)+lz/2;
+                yp0 = -sqrt((lz/2)^2-(z0-lz/2).^2)+lz/2;
                 zpPlus = sqrt((lz/2)^2-(y0-lz/2).^2)+lz/2;
                 zpMinus = -sqrt((lz/2)^2-(y0-lz/2).^2)+lz/2;
             end
@@ -347,17 +336,25 @@ for j=2:ny-1
             deltaz=round(abs(z0-zp0),10);
             deltazs=z0-zp0;
             
-            if deltaz<dz
-                if round(deltaz,mz+2)~=0
-                    zs(2-sign(deltazs))=z0-sign(deltazs)*deltaz;
+            if deltaz >= dz && deltay >= dy
+                Sc(j,k) = 0;           
+            else
+                if deltaz < dz                    
+                    if round(deltaz,mz+2)~=0
+                        zs(2-sign(deltazs))=z0-sign(deltazs)*deltaz;
+                    else
+                        S(j,k) = 1;
+                    end
+                end           
+                if deltay < dy 
+                    if round(deltay,my+2)~=0 
+                        ys(2-sign(deltays))=y0-sign(deltays)*deltay;
+                    else
+                        S(j,k) = 1;
+                    end
                 end
-            end           
-            if deltay<dy
-                if round(deltay,my+2)~=0 
-                    ys(2-sign(deltays))=y0-sign(deltays)*deltay;
-                end
-            end 
-            
+            end
+
             bj=zeros(1,3);
             bk=zeros(1,3);          
             bj(1)=2/((ys(2)-ys(1))*(ys(3)-ys(1)));
@@ -388,18 +385,34 @@ for j=2:ny-1
         end
     end
 end
-            
+
+%% Solid condition - modify the A matrix
+% Modify A and P matrix for points within and on the boundary of riblets
+% Velocity inside riblets = 0
+for j = 1:ny
+    for k = 1:nz
+        if S(j,k) == 1
+            index = (k-1)*ny+j;
+            A(index,:) = 0;
+            A(index,index) = 1/dy^2;
+            P(index) = 0;
+        end
+    end
+end   
+
 %% No slip at bottom condition
 for k = 1:nz
     j = 1;
-    index = (k-1)*ny+j ;
+    index = (k-1)*ny+j;
     A(index,:) = 0;
     A(index,index) = 1/dy^2;
     P(index)=0;
 end
+
 %% Solution
 u = mldivide(A,P);
 u = reshape(u,ny,nz); % converts u into size (ny,nz)
+
 %% average in z and find point of min gradient
 ums = mean(u,2);
 ums = full(ums);
@@ -412,17 +425,44 @@ end
 grad(ny) = grad(ny-1);
 [grad_min, minimum] = min(grad);
 boundary = y(minimum)-grad_min*ums(minimum);
+y_line = grad_min*ums + boundary;
+fprintf('Virtual boundary at y = %f\n', boundary)
 h_hist(end+1) = height-boundary;
+
+% calculate and plot u profile under virtual origin
+n_o = round(boundary/ly*ny); % index of virtual origin
+u_o = u(1:n_o,:);
+u_g = u(1:n_g,:);
+
+%% calculate coefficients
+% at plane of riblet tips
+intg = dy*trapz(full(u_g)); % integrate u*dy with z constant
+G1_g = dz*trapz(intg); % integration in y and z
+G1_hist(end+1) = G1_g;
+u_surfg = u_g(end,:);
+G2_g = dz*trapz(full(u_surfg)); % integration in z at top layer
+G2_hist(end+1) = G2_g;
+
+% at virtual origin
+integraly = dy*trapz(full(u_o));
+G1_o = dz*trapz(integraly)
+u_surf = u_o(end,:);
+G2_o = dz*trapz(full(u_surf))
 
 end
 
 figure(1)
-semilogy(a_hist, h_hist)
-ylabel('h_{||}')
-xlabel('a')
-toc
+plot(a_hist, G1_hist)
+ylabel('G1')
+xlabel('n')
 
 figure(2)
-loglog(a_hist, h_hist-0.172)
-ylabel('h_{||} error')
-xlabel('a')
+plot(a_hist, G2_hist)
+ylabel('G2')
+xlabel('n')
+
+figure(3)
+plot(a_hist, h_hist,'-o') % abs(h_hist-0.13895)*100/0.13895 for triangle9
+ylabel('h_{||}')
+xlabel('n')
+toc

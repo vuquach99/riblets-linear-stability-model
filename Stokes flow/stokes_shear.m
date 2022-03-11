@@ -1,4 +1,5 @@
 %% Programme to solve for Stokes velocity profile in riblets
+% Non-zero shear at the interface, zero pressure gradient
 % Solve A*u = P
 % S = riblets grid points
 % P = pressure gradient
