@@ -3,7 +3,7 @@
 % F1 scales by s^4 -> Lwp^3 scales by s^3
 % F2 scales by s^3 -> Lsp^2 scales by s^2
 % G1 scales by s^3 -> Lhq^2 scales by s^2
-% G2 scales by s^2 -> Lsq^2 scales by s^1
+% G2 scales by s^2 -> Lsq scales by s^1
 
 %% blade riblets: % K-H
 boundary = 0.387330656949723

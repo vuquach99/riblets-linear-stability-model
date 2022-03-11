@@ -11,11 +11,11 @@ tic
 
 %% Input data
 lz = 1; % always
-ly = 0.5; % always > height for periodic flow
+ly = 2; % always > height for periodic flow
 
 % Define grid sizes
-nz = 20; % number of points in periodic z (spanwise)
-ny = 21; % number of points y (wall-normal) domain is enclosed
+nz = 200; % number of points in periodic z (spanwise)
+ny = 201; % number of points y (wall-normal) domain is enclosed
 dy = ly/(ny-1); % length of sub-intervals in y-axis
 dz = lz/nz; % length of sub-intervals in z-axis
 y = (0:ny-1)/(ny-1)*ly;
@@ -24,7 +24,7 @@ z = (0:nz-1)/nz*lz;
 dpdx = 0; % Pressure gradient
 Sx = 1; % Shear at the top, could set to 1 (if normalised, always 1)
 
-geometry = 2
+geometry = 1
 % 1 = triangle (k/s = 1+sqrt(3) for 30deg, 0.5 for 90deg, sqrt(3) for 60deg)
 % 2 = semi-circle (k/s = 0.5)
 % 3 = trapezium (k/s = 0.5; tip half-angle = 15deg)
@@ -44,13 +44,13 @@ if geometry == 1 % triangle
     end
     if angle == 60
         shape = 'triangle6';
-        height = sqrt(3)/2;
+        height = sqrt(3)*lz/2;
         triangle = sqrt(3)*z-sqrt(3)*lz/2;
         triangle2 = -sqrt(3)*z+sqrt(3)*lz/2;
     end
     if angle == 30
         shape = 'triangle3';
-        height = 1 + sqrt(3)/2;
+        height = (1+sqrt(3))*lz/2;
         triangle = (2+sqrt(3))*z-1-sqrt(3)*lz/2;
         triangle2 = -(2+sqrt(3))*z+1+sqrt(3)*lz/2;
     end
@@ -83,9 +83,9 @@ if geometry == 3 % trapezium
     for k=1:nz
         for j=1:ny
             if y(j) <= trapezium(k) || y(j) <= trapezium2(k)
-                S(j, k) = 1;
+                S(j,k) = 1;
             else
-                S(j, k) = 0;
+                S(j,k) = 0;
             end
         end
     end
@@ -105,10 +105,6 @@ if geometry == 4 % blade
     end
 end
 
-figure(1); clf
-hold on
-spy(S)
-
 %% Build Sd matrix
 % Sd = 1 for points within and on boundary and = 0 elsewhere 
 % riblets now bigger by rd = max(dy,dz)
@@ -120,33 +116,33 @@ if geometry == 1 % triangle
     if angle == 90
         triangle = z+rd-lz/2+0.00001;
         triangle2 = -z+rd+lz/2+0.00001;
-        ztriangle = (0:100)/100; % reference
-        ytriangle1 = ztriangle-lz/2+0.00001;
-        ytriangle2 = -ztriangle+lz/2+0.00001;
-        zplot = 1+ztriangle*(nz-1)/lz;
-        yplot1 = 1+ytriangle1*(ny-1)/ly;
-        yplot2 = 1+ytriangle2*(ny-1)/ly;
+        zpl = (0:100)/100; % reference
+        ypl1 = zpl-lz/2+0.00001;
+        ypl2 = -zpl+lz/2+0.00001;
+        zplot = 1+zpl*nz/lz;
+        yplot1 = 1+ypl1*(ny-1)/ly;
+        yplot2 = 1+ypl2*(ny-1)/ly;
     end
     if angle == 60
         triangle = sqrt(3)*(z+rd)-sqrt(3)*lz/2;
         triangle2 = -sqrt(3)*(z-rd)+sqrt(3)*lz/2;        
-        ztriangle = (0:100)/100; % reference
-        ytriangle1 = sqrt(3)*ztriangle-sqrt(3)*lz/2;
-        ytriangle2 = -sqrt(3)*ztriangle+sqrt(3)*lz/2;
-        zplot = 1+ztriangle*(nz-1);
-        yplot1 = 1+ytriangle1*(ny-1)/ly;
-        yplot2 = 1+ytriangle2*(ny-1)/ly;
+        zpl = (0:100)/100; % reference
+        ypl1 = sqrt(3)*zpl-sqrt(3)*lz/2;
+        ypl2 = -sqrt(3)*zpl+sqrt(3)*lz/2;
+        zplot = 1+zpl*nz/lz;
+        yplot1 = 1+ypl1*(ny-1)/ly;
+        yplot2 = 1+ypl2*(ny-1)/ly;
         
     end
     if angle == 30
         triangle = (2+sqrt(3))*(z+rd)-1-sqrt(3)*lz/2;
         triangle2 = -(2+sqrt(3))*(z-rd)+1+sqrt(3)*lz/2;
-        ztriangle = (0:100)/100; % reference
-        ytriangle1 = (2+sqrt(3))*ztriangle-1-sqrt(3)*lz/2;
-        ytriangle2 = -(2+sqrt(3))*ztriangle+1+sqrt(3)*lz/2;
-        zplot = 1+ztriangle*(nz-1);
-        yplot1 = 1+ytriangle1*(ny-1)/ly;
-        yplot2 = 1+ytriangle2*(ny-1)/ly;
+        zpl = (0:100)/100; % reference
+        ypl1 = (2+sqrt(3))*zpl-1-sqrt(3)*lz/2;
+        ypl2 = -(2+sqrt(3))*zpl+1+sqrt(3)*lz/2;
+        zplot = 1+zpl*nz/lz;
+        yplot1 = 1+ypl1*(ny-1)/ly;
+        yplot2 = 1+ypl2*(ny-1)/ly;
     end
     for k = 1:nz
         for j = 1:ny
@@ -157,8 +153,6 @@ if geometry == 1 % triangle
             end
         end
     end
-    figure(1)
-    plot(zplot,yplot1,'k',zplot,yplot2,'k')
 end
 
 if geometry == 2 % semi-circle    
@@ -167,25 +161,21 @@ if geometry == 2 % semi-circle
     for j = n_g+1:ny
         Sd(j,:) = 0;
     end
-    zcircle = (0:100)/100; % reference
-    ycircle = (-sqrt((lz/2)^2-(zcircle-lz/2).^2))+lz/2;
-    zplot = 1+zcircle*nz;
-    yplot = 1+ycircle*(ny-1)/ly;
-    figure(1)
-    plot(zplot,yplot,'k')
+    zpl = (0:100)/100; % reference
+    ypl = (-sqrt((lz/2)^2-(zpl-lz/2).^2))+lz/2;
+    zplot = 1+zpl*nz/lz;
+    yplot = 1+ypl*(ny-1)/ly;
 end
 
 if geometry == 3 % trapezium
     trapezium = (4+2*sqrt(3))*(z+rd)-3.5-2*sqrt(3);
     trapezium2 = -(4+2*sqrt(3))*(z-rd)+0.5;
-    ztrap = (0:100)/100; % reference
-    ytrap = (4+2*sqrt(3))*ztrap-3.5-2*sqrt(3);
-    ytrap2 = -(4+2*sqrt(3))*ztrap+0.5;
-    zplot = 1+ztrap*nz;
-    yplot1 = 1+ytrap*(ny-1)/ly;
-    yplot2 = 1+ytrap2*(ny-1)/ly;
-    figure(1)
-    plot(zplot,yplot1,'k',zplot,yplot2,'k')
+    zpl = (0:100)/100; % reference
+    ypl1 = (4+2*sqrt(3))*zpl-3.5-2*sqrt(3);
+    ypl2 = -(4+2*sqrt(3))*zpl+0.5;
+    zplot = 1+zpl*nz/lz;
+    yplot1 = 1+ypl1*(ny-1)/ly;
+    yplot2 = 1+ypl2*(ny-1)/ly;
     for k=1:nz
         for j=1:ny
             if y(j) <= trapezium(k) || y(j) <= trapezium2(k)
@@ -207,17 +197,10 @@ if geometry == 4 % blade
             end
         end
     end
-    figure(1)
-    hold on
-    xline(0.1*lz*nz+1)
-    xline(nz-0.1*lz*nz+1)
 end
 
 %% Build Sc matrix - curve of the boundary
 Sc = Sd-S;
-figure(1)
-spy(Sc,'r')
-title('S & Sc matrices')
 
 %% Build P matrix - pressure gradient - RHS of Stokes
 P = ones(ny*nz,1);
@@ -252,20 +235,6 @@ for k = 1:nz
         A(index,index-1) = -1/dy^2;
     end   
     P(index) = Sx/dy;
-end
-
-%% Solid condition - modify the A matrix
-% Modify A and P matrix for points within and on the boundary of riblets
-% Velocity inside riblets = 0
-for j = 1:ny
-    for k = 1:nz
-        if S(j,k) == 1
-            index = (k-1)*ny+j;
-            A(index,:) = 0;
-            A(index,index) = 1/dy^2;
-            P(index) = 0;
-        end
-    end
 end
 
 %% Modify the A matrix - curve of the boundary
@@ -313,7 +282,7 @@ for j=2:ny-1
             end
             
             if geometry == 2 % semi-circle
-                yp0 = sqrt((lz/2)^2-(z0-lz/2).^2)+lz/2;
+                yp0 = -sqrt((lz/2)^2-(z0-lz/2).^2)+lz/2;
                 zpPlus = sqrt((lz/2)^2-(y0-lz/2).^2)+lz/2;
                 zpMinus = -sqrt((lz/2)^2-(y0-lz/2).^2)+lz/2;
             end
@@ -356,18 +325,25 @@ for j=2:ny-1
             deltaz=round(abs(z0-zp0),10);
             deltazs=z0-zp0;
             
-            if deltaz<dz
-                if round(deltaz,mz+2)~=0
-                    zs(2-sign(deltazs))=z0-sign(deltazs)*deltaz;
-                    
+            if deltaz >= dz && deltay >= dy
+                Sc(j,k) = 0;           
+            else
+                if deltaz < dz                    
+                    if round(deltaz,mz+2)~=0
+                        zs(2-sign(deltazs))=z0-sign(deltazs)*deltaz;
+                    else
+                        S(j,k) = 1;
+                    end
+                end           
+                if deltay < dy 
+                    if round(deltay,my+2)~=0 
+                        ys(2-sign(deltays))=y0-sign(deltays)*deltay;
+                    else
+                        S(j,k) = 1;
+                    end
                 end
-            end           
-            if deltay<dy
-                if round(deltay,my+2)~=0 
-                    ys(2-sign(deltays))=y0-sign(deltays)*deltay;
-                end
-            end 
-            
+            end
+
             bj=zeros(1,3);
             bk=zeros(1,3);          
             bj(1)=2/((ys(2)-ys(1))*(ys(3)-ys(1)));
@@ -398,11 +374,40 @@ for j=2:ny-1
         end
     end
 end
-            
+
+% plot S & Sc matrices
+figure(1); clf
+hold on
+if geometry == 2
+    plot(zplot,yplot,'k')
+elseif geometry == 4
+    xline(0.1*lz*nz+1)
+    xline(nz-0.1*lz*nz+1)
+else
+    plot(zplot,yplot1,'k',zplot,yplot2,'k')
+end
+spy(S)
+spy(Sc,'r')
+title('S & Sc matrices')
+
+%% Solid condition - modify the A matrix
+% Modify A and P matrix for points within and on the boundary of riblets
+% Velocity inside riblets = 0
+for j = 1:ny
+    for k = 1:nz
+        if S(j,k) == 1
+            index = (k-1)*ny+j;
+            A(index,:) = 0;
+            A(index,index) = 1/dy^2;
+            P(index) = 0;
+        end
+    end
+end   
+
 %% No slip at bottom condition
 for k = 1:nz
     j = 1;
-    index = (k-1)*ny+j ;
+    index = (k-1)*ny+j;
     A(index,:) = 0;
     A(index,index) = 1/dy^2;
     P(index)=0;

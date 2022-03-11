@@ -20,7 +20,7 @@ line{1} = 'k-'; line{2} = 'k--'; line{3} = 'k:';
 
 s=[20]';%[1 2 6 10 11 14 16 50 60 70 80]';%[1 2 6 8 10 11 12 14 16 18 20 25 30 40 50]';
 % Lwp=((pi/256)^(1/3))*s;
-Lwp=((pi/256)^(1/3))*s;
+% Lwp=((pi/256)^(1/3))*s;
 % flowtype='viscous';
 
 % Plot sigma I (amplification) vs wavelength
@@ -55,7 +55,7 @@ for jRe=1:length(Rtt)
         hold on
         n = length(Lwp);
         plot(lxp,imag_eigval, 'LineWidth', 2)
-        fname = ['ribstab_Rt550_Lw4.6132_Ny256.mat'] % set at tips
+        fname = ['ribstab_Rt550_Lw4.6134_Ny256.mat'] % set at tips
         load(fname)
         for p=1:nx;
         imag_eigval(p)=max(imag(eigvals(:,p)))/utau/Rt; %.*Re./Rt.^2;
