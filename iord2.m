@@ -1,13 +1,17 @@
-function [xs,es]=iord2(d)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   compute ordered eigenvalues of d              %
-%   d==input matrix                               %
-%   es==ordered eigenvalues                       %
-%   xs==ordered eigenvectors                      %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [xs,es] = iord2(d)
+% Computes ordered eigenvalues of d
 
-  [v,e]=eig(d);
-  e=diag(e);
-  [eimag,is]=sort(-imag(e));
-  xs=v(:,is);
-  es=e(is);
+% INPUT:
+% d = input matrix
+
+% OUTPUT:
+% es = ordered eigenvalues
+% xs = ordered eigenvectors
+
+[v,e] = eig(d); 
+% v = matrix with eigenvectors as columns
+% e = diagonal matrix of eigenvalues
+e = diag(e);
+[~,is] = sort(imag(e),'descend');
+xs = v(:,is);
+es = e(is);

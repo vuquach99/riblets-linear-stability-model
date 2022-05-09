@@ -21,7 +21,7 @@ F1_hist = [];
 F2_hist = [];
 
 % Define grid sizes
-for n = 10:1:200
+for n = 10:1:100
 n_hist(end+1) = n;
 % Define grid sizes
 nz = n+1 % number of points in z
@@ -410,17 +410,17 @@ error = (max(u(:))*4-lz^2/4)*100/(lz^2/4); % percentage error
 error_hist(end+1) = error;
 end
 figure(1)
-plot(n_hist, error_hist)
+loglog(n_hist, error_hist)
 ylabel('Percentage error u')
 xlabel('Number or points in y')
 
 figure(2)
-plot(n_hist, (F1_hist-0.012271846303085)*100/0.012271846303085)
+loglog(n_hist, abs((F1_hist-0.012271846303085)*100/0.012271846303085))
 ylabel('Percentage error F1')
 xlabel('Number or points in y')
 
 figure(3)
-plot(n_hist, (F2_hist-0.041666666666667)*100/0.041666666666667)
+loglog(n_hist, abs((F2_hist-0.041666666666667)*100/0.041666666666667))
 ylabel('Percentage error F2')
 xlabel('Number or points in y')
 toc
