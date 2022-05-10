@@ -3,7 +3,6 @@ close all
 
 % Nosmod=[512];
 Nosmod=256;
-nosmod=Nosmod;
 % Lwp=[10]';%[2 4 6 8 10 12]';
 % Rtt=[180 550 1000]';
 Rtt=[550];

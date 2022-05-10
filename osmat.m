@@ -1,24 +1,13 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                    %
-%  osmat.m                                                           %
-%  program to compute Orr-Sommerfeld / Squire matrix for 3D          %
-%  Poiseuille Flow and to compute energy matrix.                     %
-%                                                                    %
-%  INPUT:                                                            %
-%  nosmod	= number of Orr-Sommerfeld modes                     %
-%  R		= Reynolds number                                    %
-%                                                                    %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Computes Orr-Sommerfeld / Squire matrix for 3D Poiseuille Flow and to compute energy matrix.
 
-eigvals=zeros(         nosmod+1,nx);
-eigvecs=zeros(nosmod+1,nosmod+1,nx);
+eigvals = zeros(         nosmod+1,nx);
+eigvecs = zeros(nosmod+1,nosmod+1,nx);
 
-for ia=1:nx
-  alp=alp0(ia);
-  d = turchan(alp,D0,D1,D2,D3,D4,uc,Rt,iKw,nut,iSw,Re,lhq,lsq,L);
-  [eigvecs(:,:,ia),eigvals(:,ia)]=iord2(d);
-%     d =  inverse_boundary_conditions(alp,D0,D1,D2,D3,D4,uc,Rt,iKw,nut,iSw, Re);
-%     [eigvecs(:,:,ia),eigvals(:,ia)]=iord2_inverse(d);
+% Sweeps through wavenumbers
+for ia = 1:nx
+    alp = alp0(ia);
+    d = turchan(alp,D0,D1,D2,D3,D4,U,nut,Kvp,Kup,Kvs,Kus);
+    [eigvecs(:,:,ia),eigvals(:,ia)]=iord2(d);
 
 Max_imag1=find(imag(eigvals(:,ia))>=10);
 
