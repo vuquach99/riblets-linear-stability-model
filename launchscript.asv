@@ -3,7 +3,7 @@ clear
 close all
 
 %% Geometry parameters
-s = 50; % riblet spacing s+
+s = %[5 10 20 30 40 50]'; % riblet spacing s+
 % s = [1 2 5 10 11 14 16 18 20 25 30 40 50]'; %[5 10 20 30 40 50]';
 shape = 'circle';
 G1 = 0; % 0.041857060995110
@@ -12,7 +12,6 @@ F1 = 0.012273817101988; % analytical = 0.012271846303085
 F2 = 0.041563532761828; % analytical = 0.041666666666667
 
 %% Other inputs
-savefile = 0;
 Rt = 550; % friction Reynolds number
 % Sweep through a range of wavelengths
 nosmod = 256; % number of modes
@@ -62,24 +61,22 @@ for jK = 1:size(Lvp,1)
     % Calculates stuff
     fname = ['Rt' num2str(Rt) '_' shape '_Lvp' num2str(Lvpp) '_Ny' num2str(nosmod) '.mat'];
     ribstab
-    if savefile == 1
-        save(fname,'Rt','Max_unstab','y','Lvpp','nosmod','ut','lxp','maxeigvc','maxeigvl','eigvals')
-    end
+    save(fname,'Rt','Max_unstab','y','Lvpp','nosmod','ut','lxp','maxeigvc','maxeigvl','eigvals')
 end
 
 %% Plots Orr-Sommerfeld spectrum
 figure(1)
-hold on
 for r = 1:length(Lvp)
     Lvpp = Lvp(r);
     omega_imag = imag(Max_unstab)/ut/Rt; % /utau/Rt for channel units
     omega_real = real(Max_unstab)/ut/Rt;
     plot(omega_real,omega_imag,'.',...
-        'Color', [(r-1)*1/(length(Lvp))', 0, 1-(r-1)*1/(length(Lvp))],'MarkerSize', 10)    
+        'Color', [(r-1)*1/(length(Lvp))', 0, 1-(r-1)*1/(length(Lvp))],'MarkerSize', 10)
+    hold on
 end
 set(gcf,'position',[160 280 800 600])
-set(gca,'Xlim',[-2 2])
-set(gca,'Ylim',[-2 1])
+set(gca,'Xlim',[-100 100])
+set(gca,'Ylim',[-200 100])
 set(gca,'Fontn','Times','FontSize',18,'LineWidth',2)
 xlabel('\omega_R','FontAngle','italic')
 ylabel('\omega_I','FontAngle','italic')

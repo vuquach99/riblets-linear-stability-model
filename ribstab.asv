@@ -6,7 +6,7 @@ eigvecs = zeros(nosmod+1,nosmod+1,nx); % (eigenvector's 2 dimensions, wavenumber
 eigvals = zeros(nosmod+1,nx); % (eigenvalue, wavenumber)
 
 %% Stores most amplified eigenvalue of each wavenumber
-Max_unstab = zeros(1,nx);
+
 for ia = 1:nx
     alp = alp0(ia);
     d = turchan(alp,D0,D1,D2,D3,D4,U,nut,Kvp,Kup,Kvs,Kus);
@@ -31,7 +31,7 @@ for ia = 1:nx
         end
     end
     % Then stores the largest eigenvalue of this wavenumber in Max_unstab
-    [~,Max_ind] = max(imag(Unstab(:,ia))); % each wavenumber
+    [value,Max_ind] = max(imag(Unstab(:,ia))); % each wavenumber
     Max_unstab(ia) = Unstab(Max_ind,ia);
 end
 

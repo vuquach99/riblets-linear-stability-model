@@ -78,7 +78,7 @@ for jRe=1:length(Rtt)
         box on
 %         annotation(gcf,'arrow',[0.4583 0.4583],[0.3842 0.68],...
 %             'Color',[.3 .3 .3],'HeadLength',15,'HeadWidth',15,'LineWidth',4);
-        print -depsc2 ampl_AVERT_1
+%        print -depsc2 ampl_AVERT_1
     end
 %     lgn=legend('L_w^+=2','L_w^+=6','L_w^+=10', 'L_w^+=14');
 %     title(lgn, 'Wall Normal Permeability Values')

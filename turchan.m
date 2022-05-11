@@ -26,11 +26,11 @@ unos = ones(1,length(u));
 % Sets up Orr-Sommerfeld matrices
 B =  D2 - ak2*D0;
 
-A =  alp*(u*unos).*B;
-A =  A - alp*(uyy*unos).*D0;
-A =  A + 1i*(Nut*unos).*(D4 - 2*ak2*D2 + (ak2^2)*D0);
-A =  A + 2i*(Nutp*unos).*(D3 - ak2*D1);
-A =  A + 1i*(Nutpp*unos).*(D2 + ak2*D0);
+A = alp*(u*unos).*B;
+A = A - alp*(uyy*unos).*D0;
+A = A + 1i*(Nut*unos).*(D4 - 2*ak2*D2 + (ak2^2)*D0);
+A = A + 2i*(Nutp*unos).*(D3 - ak2*D1);
+A = A + 1i*(Nutpp*unos).*(D2 + ak2*D0);
 
 % Boundary condition 1
 Bt = D1(1,:); % top layer
@@ -53,7 +53,7 @@ Btu = Atu;
 Bbu = Abu;
 
 % Pushes the spurious eigenvalues somewhere far away
-er  = -20000;
+er = -20000;
 B = [Bt; Btu; B(3:Nos-2,:); Bbu; Bb];
 A = [At; er*Atu; A(3:Nos-2,:); er*Abu; Ab];
 
