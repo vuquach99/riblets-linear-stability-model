@@ -1,7 +1,6 @@
 % Extracts relevant results and processes data
 
 %% Initialises matrices to store eigenvectors and eigenvalues
-
 eigvecs = zeros(nosmod+1,nosmod+1,nx); % (eigenvector's 2 dimensions, wavenumber)
 eigvals = zeros(nosmod+1,nx); % (eigenvalue, wavenumber)
 
@@ -25,15 +24,24 @@ for ia = 1:nx
         index = Max_imag1(in);
         Max_real1(in) = real(eigvals(index,ia));
         if Max_real1(in) < 100 && Max_real1(in) > 0
-            Unstab(in,ia) = eigvals(index,ia);
+            Unstab(in,ia) = eigvals(index,ia); % Unstab = matrix of wavenumber's eigenvalues (columns)
         else
             Unstab(in,ia) = -1000-1000i; % Other eigenvalues are pushed to this value
         end
     end
-    % Then stores the largest eigenvalue of this wavenumber in Max_unstab
-    [~,Max_ind] = max(imag(Unstab(:,ia))); % each wavenumber
+    % If Unstab(:,ia) is empty, populate it with zeros
+    if isempty(Max_imag1)
+        Unstab = [Unstab(:,:) zeros(size(Unstab,1),1)];
+    end
+    
+    % Then stores the most amplified eigenvalue of this wavenumber in Max_unstab
+    [~,Max_ind] = max(imag(Unstab(:,ia)));
     Max_unstab(ia) = Unstab(Max_ind,ia);
 end
+
+% Stores the most amplified eigenvalue of all wavenumbers in Most_unstab
+[~,Most_ind] = max(imag(Max_unstab));
+Most_unstab = Max_unstab(Most_ind); 
 
 %% Post-processing
 maxeigvl=[];

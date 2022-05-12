@@ -1,18 +1,17 @@
-% Main linear stability analysis programme.
+% Linear stability analysis for one riblet spacing over multiple wavelengths
 clear
 close all
 
 %% Geometry parameters
 s = 50; % riblet spacing s+
-% s = [1 2 5 10 11 14 16 18 20 25 30 40 50]'; %[5 10 20 30 40 50]';
 shape = 'circle';
-G1 = 0; % 0.041857060995110
-G2 = 0; % 0.234528106122330
-F1 = 0.012273817101988; % analytical = 0.012271846303085
-F2 = 0.041563532761828; % analytical = 0.041666666666667
+G1 = 0.008056486729527 % 0.016764297863788 
+G2 = 0.072447438454782 % 0.150404461915805
+F1 = 0.002829009694317
+F2 = 0.016652818813973
 
 %% Other inputs
-savefile = 0;
+savefile = 1;
 Rt = 550; % friction Reynolds number
 % Sweep through a range of wavelengths
 nosmod = 256; % number of modes
@@ -20,11 +19,7 @@ nosmod = 256; % number of modes
 % wavelength parameters (lxp = friction lambda)
 nx = 100; % number of wavelengths
 lxpmin = 10;
-lxpmax = 1800;
-% for investigating a single wavelength value
-% nx = 1; 
-% lxpmin=56;
-% lxpmax=57;
+lxpmax = 10000;
 
 % Parameters for generating velocity profile
 kapa = 0.426;
@@ -50,6 +45,8 @@ lxp = fliplr(exp(lxp));
 alp0 = 2*pi*Rt./lxp; % wavenumber in channel units
 
 %% Main loop
+most_imag = [];
+most_real = [];
 for jK = 1:size(Lvp,1)
     % Pressure-driven coefficients
     Lvpp = Lvp(jK);
@@ -60,28 +57,30 @@ for jK = 1:size(Lvp,1)
     Kvs = (Lvs(jK)/Rt)^2; % Lvs
     Kus = Lus/Rt; % Lus
     % Calculates stuff
-    fname = ['Rt' num2str(Rt) '_' shape '_Lvp' num2str(Lvpp) '_Ny' num2str(nosmod) '.mat'];
+    fname = ['Rt' num2str(Rt) '_' shape '_Lvp' num2str(Lvpp) '_Ny' num2str(nosmod) '.mat']
     ribstab
     if savefile == 1
         save(fname,'Rt','Max_unstab','y','Lvpp','nosmod','ut','lxp','maxeigvc','maxeigvl','eigvals')
     end
+    most_imag(end+1) = imag(Most_unstab)/ut/Rt; % /utau/Rt for channel units
+    most_real(end+1) = real(Most_unstab)/ut/Rt;
 end
 
-%% Plots Orr-Sommerfeld spectrum
-figure(1)
-hold on
-for r = 1:length(Lvp)
-    Lvpp = Lvp(r);
-    omega_imag = imag(Max_unstab)/ut/Rt; % /utau/Rt for channel units
-    omega_real = real(Max_unstab)/ut/Rt;
-    plot(omega_real,omega_imag,'.',...
-        'Color', [(r-1)*1/(length(Lvp))', 0, 1-(r-1)*1/(length(Lvp))],'MarkerSize', 10)    
-end
-set(gcf,'position',[160 280 800 600])
-set(gca,'Xlim',[-2 2])
-set(gca,'Ylim',[-2 1])
-set(gca,'Fontn','Times','FontSize',18,'LineWidth',2)
-xlabel('\omega_R','FontAngle','italic')
-ylabel('\omega_I','FontAngle','italic')
-title('Orr-Sommerfeld spectrum')
-box on
+%% Plots most amplified mode of each wavenumber
+% figure(1)
+% hold on
+% for r = 1:size(Lvp,1)
+%     Lvpp = Lvp(r);      
+%     omega_imag = imag(Max_unstab)/ut/Rt; % /utau/Rt for channel units
+%     omega_real = real(Max_unstab)/ut/Rt;
+%     plot(omega_real,omega_imag,'.',...
+%         'Color', [(r-1)*1/(length(Lvp))', 0, 1-(r-1)*1/(length(Lvp))],'MarkerSize', 10)    
+% end
+% set(gcf,'position',[160 280 800 600])
+% set(gca,'Xlim',[-1 2])
+% set(gca,'Ylim',[-1.5 0.5])
+% set(gca,'Fontn','Times','FontSize',18,'LineWidth',2)
+% xlabel('\omega_r','FontAngle','italic')
+% ylabel('\omega_i','FontAngle','italic')
+% title('Orr-Sommerfeld spectrum')
+% box on

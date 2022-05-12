@@ -53,7 +53,7 @@ Btu = Atu;
 Bbu = Abu;
 
 % Pushes the spurious eigenvalues somewhere far away
-er = -20000;
+er = -20000i;
 B = [Bt; Btu; B(3:Nos-2,:); Bbu; Bb];
 A = [At; er*Atu; A(3:Nos-2,:); er*Abu; Ab];
 
