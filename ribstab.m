@@ -41,7 +41,8 @@ end
 
 % Stores the most amplified eigenvalue of all wavenumbers in Most_unstab
 [~,Most_ind] = max(imag(Max_unstab));
-Most_unstab = Max_unstab(Most_ind); 
+Most_unstab = Max_unstab(Most_ind);
+Most_lxp = lxp(Most_ind);
 
 %% Post-processing
 maxeigvl=[];

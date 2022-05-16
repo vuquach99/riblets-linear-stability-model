@@ -20,6 +20,8 @@ Nos = N+1;
 
 % Cess eddy viscosity model
 y0 = 1-y;
+% y0 = y0 + (spanwise protrusion height, Luchini in outer units)
+% remember to set nut to 1 below y0
 nut = 0.5*(1 + kapa^2*Rt^2/9*(2*y0-y0.^2).^2.*(3-4*y0+2*y0.^2).^2.*...
     (1-exp(-y0*Rt/Aint)).^2).^.5+0.5;
 

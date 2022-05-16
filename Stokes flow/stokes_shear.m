@@ -15,8 +15,8 @@ lz = 1; % always
 ly = 2; % always > height for periodic flow
 
 % Define grid sizes
-nz = 200; % number of points in periodic z (spanwise)
-ny = 201; % number of points y (wall-normal) domain is enclosed
+nz = 100; % number of points in periodic z (spanwise)
+ny = 101; % number of points y (wall-normal) domain is enclosed
 dy = ly/(ny-1); % length of sub-intervals in y-axis
 dz = lz/nz; % length of sub-intervals in z-axis
 y = (0:ny-1)/(ny-1)*ly;

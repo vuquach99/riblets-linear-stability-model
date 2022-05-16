@@ -2,36 +2,92 @@
 clear
 close all
 
-%% Maximum amplification growth rate vs wavelength+
+nosmod = 256;
+Rt= 550;
+s = [5 10 20 30 40 50]';
+
+%% Amplification growth rate vs wavelength+
 figure(1)
 hold on
+set(gcf,'position',[1 1 575 380])
+set(gcf,'PaperPositionMode','auto')
 
 % Set at tips
-fname = 'Rt550_circle_Lvp11.5336_Ny256.mat';
-load(fname)
-nx = length(lxp);
-for p = 1:nx
-    imag_eigval(p) = imag(Max_unstab(p))/ut/Rt;
+shape = 'circle';
+for jK = 1:size(s,1)
+    sp = s(jK);
+    fname = ['Rt' num2str(Rt) '_' shape '_sp' num2str(sp) '_Ny' num2str(nosmod) '.mat'];
+    load(fname)
+    nx = length(lxp);
+    for p = 1:nx
+        imag_eigval(p) = imag(Max_unstab(p))/ut/Rt;
+    end
+    most_unstab = imag(Most_unstab)/ut/Rt;
+    h(1) = plot(lxp,imag_eigval,'-','LineWidth',2,'Color',...
+        [(jK-1)*1/(length(s))',0,1-(jK-1)*1/(length(s))]);
+    plot(Most_lxp,most_unstab,'o','LineWidth', 2,'Color',...
+        [(jK-1)*1/(length(s))',0,1-(jK-1)*1/(length(s))],'MarkerSize', 10)
 end
-plot(lxp,imag_eigval,'LineWidth',2)
 
 % Set inside grooves
-fname = 'Rt550_circle_Lvp7.0716_Ny256.mat';
-load(fname)
-nx = length(lxp);
-for p = 1:nx
-    imag_eigval(p) = imag(Max_unstab(p))/ut/Rt;
+shape = 'circle1';
+for jK = 1:size(s,1)
+    sp = s(jK);
+    fname = ['Rt' num2str(Rt) '_' shape '_sp' num2str(sp) '_Ny' num2str(nosmod) '.mat'];
+    load(fname)
+    nx = length(lxp);
+    for p = 1:nx
+        imag_eigval(p) = imag(Max_unstab(p))/ut/Rt;
+    end
+    most_unstab = imag(Most_unstab)/ut/Rt;
+    h(2) = plot(lxp,imag_eigval,'--','LineWidth',2,'Color',...
+        [(jK-1)*1/(length(s))',0,1-(jK-1)*1/(length(s))]);
+    plot(Most_lxp,most_unstab,'x','LineWidth', 2,'Color',...
+        [(jK-1)*1/(length(s))',0,1-(jK-1)*1/(length(s))],'MarkerSize', 10)
 end
 
-plot(lxp,imag_eigval,'LineWidth',2)
 set(gca,'xscale','log')
 yline(0,'--','LineWidth',2)
 set(gcf,'position',[160 280 800 600])
-set(gca,'Xlim',[10 10000])
-set(gca,'Ylim',[-0.3 0.35])
+set(gca,'Xlim',[10 50000])
+set(gca,'Ylim',[-0.1 0.2])
 set(gca,'Fontn','Times','FontSize',18,'LineWidth',2)
-xlabel('\lambda_x^+','FontAngle','italic');
-ylabel('\sigma_{Im}^+','FontAngle','italic');
-title('Amplification vs Wavelength for s^+ = 20, semi-circle, no shear')
-legend('Set at tips','Set inside grooves','location','Southeast','FontSize',18)
+xlabel('\lambda_x^+','FontAngle','italic')
+ylabel('\sigma_{Im}^+','FontAngle','italic')
+legend(h([1,2]),{'Set at tips','Set inside grooves'},'location','Southeast','FontSize',18)
+title('Amplification vs Wavelength, semi-circle')
+box on
+
+%% Maximum amplification growth rate vs spacing+
+figure(2)
+hold on
+% Set at tips
+shape = 'circle';
+for jK = 1:size(s,1)
+    sp = s(jK);
+    fname = ['Rt' num2str(Rt) '_' shape '_sp' num2str(sp) '_Ny' num2str(nosmod) '.mat'];
+    load(fname)
+    most_unstab = imag(Most_unstab)/ut/Rt;
+    g(1) = plot(sp,most_unstab,'o','LineWidth',2,'Color',...
+        [(jK-1)*1/(length(s))',0,1-(jK-1)*1/(length(s))]);
+end
+
+% Set inside grooves
+shape = 'circle1';
+for jK = 1:size(s,1) 
+    sp = s(jK);
+    fname = ['Rt' num2str(Rt) '_' shape '_sp' num2str(sp) '_Ny' num2str(nosmod) '.mat'];
+    load(fname)
+    most_unstab = imag(Most_unstab)/ut/Rt;
+    g(2) = plot(sp,most_unstab,'x','LineWidth',2,'Color',...
+        [(jK-1)*1/(length(s))',0,1-(jK-1)*1/(length(s))]);
+end
+
+set(gcf,'position',[160 280 800 600])
+set(gca,'Xlim',[0 52])
+set(gca,'Fontn','Times','FontSize',18,'LineWidth',2)
+xlabel('s^+','FontAngle','italic')
+ylabel('\sigma_{Im}^+','FontAngle','italic')
+legend(g([1,2]),{'Set at tips','Set inside grooves'},'location','Southeast','FontSize',18)
+title('Maximum amplification vs Riblet spacing, semi-circle')
 box on

@@ -1,12 +1,13 @@
-% Linear stability analysis for multiple riblet spacings over one wavelength
+% Linear stability analysis over one wavelength
 clear
-close all
+% close all
 
 %% Geometry parameters
-s = linspace(1,51,11)'; %[5 10 20 30 40 50]'; % riblet spacing s+
-shape = 'circle';
-G1 = 0.033109453729754 % 0.041857060995110
-G2 = 0.192176597429408 % 0.234528106122330
+s = [5 10 20 30 40 50]'; % riblet spacing s+
+s = 50;
+shape = 'testcircle';
+G1 = 0.016764297863788 % 0.016764297863788 
+G2 = 0.150404461915805 % 0.150404461915805
 F1 = 0.012273817101988 % analytical = 0.012271846303085
 F2 = 0.041563532761828 % analytical = 0.041666666666667
 
@@ -18,8 +19,8 @@ nosmod = 256; % number of modes
 
 % wavelength parameters (lxp = friction lambda)
 nx = 1; 
-lxpmin = 350;
-lxpmax = 351; % 313, 328
+lxpmin = 9000;
+lxpmax = 9001;
 
 % Parameters for generating velocity profile
 kapa = 0.426;
@@ -52,7 +53,8 @@ most_real = [];
 figure
 hold on
 
-for jK = 1:size(Lvp,1)
+for jK = 1:size(s,1)
+    sp = s(jK);
     % Pressure-driven coefficients
     Lvpp = Lvp(jK);
     Kvp = (Lvpp/Rt)^3; % wall normal coefficients in outer units cubed
@@ -62,20 +64,21 @@ for jK = 1:size(Lvp,1)
     Kvs = (Lvs(jK)/Rt)^2; % Lvs
     Kus = Lus/Rt; % Lus
     % Calculates stuff
-    fname = ['Rt' num2str(Rt) '_' shape '_Lvp' num2str(Lvpp) '_Ny' num2str(nosmod) '.mat']
+    fname = ['Rt' num2str(Rt) '_' shape '_sp' num2str(sp) '_Ny' num2str(nosmod) '.mat']
     ribstab
     if savefile == 1
-        save(fname,'Rt','Max_unstab','y','Lvpp','nosmod','ut','lxp','maxeigvc','maxeigvl','eigvals')
+        save(fname,'Rt','Most_unstab','Most_lxp','Max_unstab','y','sp','nosmod',...
+            'ut','lxp','maxeigvc','maxeigvl','eigvals')
     end
-    omega_imag(:,jK) = imag(eigvals)/ut/Rt; % /utau/Rt for channel units
+    omega_imag(:,jK) = imag(eigvals)/ut/Rt; % /ut/Rt for channel units
     omega_real(:,jK) = real(eigvals)/ut/Rt;
     most_imag(end+1) = imag(Most_unstab)/ut/Rt;
     most_real(end+1) = real(Most_unstab)/ut/Rt;
     
     plot(omega_real(:,jK),omega_imag(:,jK),'.',...
-        'Color', [(jK-1)*1/(length(Lvp))', 0, 1-(jK-1)*1/(length(Lvp))],'MarkerSize', 10)
+        'Color',[(jK-1)*1/(length(Lvp))',0,1-(jK-1)*1/(length(Lvp))],'MarkerSize', 10)
     plot(most_real(jK),most_imag(jK),'d',...
-        'Color', [(jK-1)*1/(length(Lvp))', 0, 1-(jK-1)*1/(length(Lvp))],'MarkerSize', 10)  
+        'Color',[(jK-1)*1/(length(Lvp))',0,1-(jK-1)*1/(length(Lvp))],'MarkerSize', 10)
 end
 set(gcf,'position',[160 280 800 600])
 set(gca,'Xlim',[-0.5 2.5])

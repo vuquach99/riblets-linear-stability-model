@@ -15,8 +15,8 @@ lz = 1; % always
 ly = 0.360610010920238; % always <= height for pressure-driven flow
 
 % Define grid sizes
-nz = 201; % number of points in z
-ny = 201; % number of points in y
+nz = 101; % number of points in z
+ny = 101; % number of points in y
 dy = ly/(ny-1); % length of sub-intervals in y-axis
 dz = lz/(nz-1); % length of sub-intervals in z-axis
 y = (0:ny-1)/(ny-1)*ly;
@@ -25,7 +25,7 @@ z = (0:nz-1)/(nz-1)*lz;
 dpdx = -1; % Pressure gradient
 Sx = 0; % Shear at the top, could set to 1 (if normalised, always 1)
 
-geometry = 1
+geometry = 2
 % 1 = triangle (k/s = 1+sqrt(3) for 30deg, 0.5 for 90deg, sqrt(3) for 60deg)
 % 2 = semi-circle (k/s = 0.5)
 % 3 = trapezium (k/s = 0.5; tip half-angle = 15deg)
