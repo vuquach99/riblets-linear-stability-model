@@ -8,13 +8,13 @@ eigvals = zeros(nosmod+1,nx); % (eigenvalue, wavenumber)
 Max_unstab = zeros(1,nx);
 for ia = 1:nx
     alp = alp0(ia);
-    d = turchan(alp,D0,D1,D2,D3,D4,U,nut,Kvp,Kup,Kvs,Kus);
-    [eigvecs(:,:,ia),eigvals(:,ia)] = iord2(d);
+    d0 = turchan(alp,D0,D1,D2,D3,D4,U,nut,Kvp,Kup,Kvs,Kus);
+    [eigvecs(:,:,ia),eigvals(:,ia)] = iord2(d0);
     
-    % Finds omega_i >= 10 and makes those eigenvalues NaN
+    % Finds omega_i >= 10 and makes those eigenvalues NaN+iNaN
     Max_imag1 = find(imag(eigvals(:,ia)) >= 10);
     for i = 1:length(Max_imag1)
-        eigvals(Max_imag1(i),ia) = NaN;
+        eigvals(Max_imag1(i),ia) = NaN+1i*NaN;
     end
     
     % Stores eigenvalues with -6 <= omega_i & 0 < omega_r < 100 in Unstab

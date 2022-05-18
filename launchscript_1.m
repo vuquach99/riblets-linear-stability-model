@@ -1,19 +1,20 @@
 % Linear stability analysis over multiple wavelengths
 clear
-% close all
+close all
 
 %% Geometry parameters
-% s = 20; % riblet spacing s+
-s = [5 10 20 30 40 50]';
+s = 5; % riblet spacing s+
+% s = [5 7.5 10 12.5 15 17.5 20 30 40 50]';
 
-shape = 'circle1';
-G1 = 0 % 0.016764297863788 
-G2 = 0 % 0.150404461915805
+shape = 'circle_s';
+% at the tips
+G1 = 0.033109453729754 % 0.041857060995110
+G2 = 0.192176597429408 % 0.234528106122330
 F1 = 0.012273817101988 % analytical = 0.012271846303085
 F2 = 0.041563532761828 % analytical = 0.041666666666667
 
-F1 = 0.002829009694317
-F2 = 0.016652818813973
+% F1 = 0.002829009694317
+% F2 = 0.016652818813973
 
 %% Other inputs
 savefile = 1;
@@ -24,7 +25,7 @@ nosmod = 256; % number of modes
 % wavelength parameters (lxp = friction lambda)
 nx = 100; % number of wavelengths
 lxpmin = 10;
-lxpmax = 100000;
+lxpmax = 10000;
 
 % Parameters for generating velocity profile
 kapa = 0.426;
@@ -50,8 +51,6 @@ lxp = fliplr(exp(lxp));
 alp0 = 2*pi*Rt./lxp; % wavenumber in channel units
 
 %% Main loop
-most_imag = [];
-most_real = [];
 for jK = 1:size(s,1)
     sp = s(jK);
     % Pressure-driven coefficients    
@@ -69,6 +68,4 @@ for jK = 1:size(s,1)
         save(fname,'Rt','Most_unstab','Most_lxp','Max_unstab','y','sp','nosmod',...
             'ut','lxp','maxeigvc','maxeigvl','eigvals')
     end
-    most_imag(end+1) = imag(Most_unstab)/ut/Rt; % /ut/Rt for channel units
-    most_real(end+1) = real(Most_unstab)/ut/Rt;
 end

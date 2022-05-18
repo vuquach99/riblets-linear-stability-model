@@ -4,10 +4,10 @@ clear
 
 %% Geometry parameters
 s = [5 10 20 30 40 50]'; % riblet spacing s+
-s = 50;
-shape = 'testcircle';
-G1 = 0.016764297863788 % 0.016764297863788 
-G2 = 0.150404461915805 % 0.150404461915805
+s = 5;
+shape = 'circle';
+G1 = 0
+G2 = 0
 F1 = 0.012273817101988 % analytical = 0.012271846303085
 F2 = 0.041563532761828 % analytical = 0.041666666666667
 
@@ -19,8 +19,8 @@ nosmod = 256; % number of modes
 
 % wavelength parameters (lxp = friction lambda)
 nx = 1; 
-lxpmin = 9000;
-lxpmax = 9001;
+lxpmin = 216;
+lxpmax = 217;
 
 % Parameters for generating velocity profile
 kapa = 0.426;
@@ -48,12 +48,12 @@ alp0 = 2*pi*Rt./lxp; % wavenumber in channel units
 %% Main loop, plots Orr-Sommerfeld spectrum
 omega_imag = zeros(nosmod+1,size(Lvp,1));
 omega_real = zeros(nosmod+1,size(Lvp,1));
-most_imag = [];
-most_real = [];
+
 figure
 hold on
-
 for jK = 1:size(s,1)
+    most_imag = [];
+    most_real = [];
     sp = s(jK);
     % Pressure-driven coefficients
     Lvpp = Lvp(jK);

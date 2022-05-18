@@ -47,8 +47,8 @@ Ab = Ab + 1i*Nut(end)*(D3(end,:) - ak2*D1(end,:));
 Ab = Ab + 1i*Nutp(end)*(D2(end,:) + ak2*D0(end,:));
 
 % Boundary condition 2
-Atu = Kup/Kvp*(-Kvs*D2(1,:) - D0(1,:)) - D1(1,:) + Kus*D2(1,:); % -Kup/Kvp... -Kus?
-Abu = -Kup/Kvp*(Kvs*D2(end,:) + D0(end,:)) - D1(end,:) + Kus*D2(end,:); % +Kup/Kvp... -D0?
+Atu = Kup/Kvp*(Kvs*D2(1,:) - D0(1,:)) - D1(1,:) - Kus*D2(1,:);
+Abu = -Kup/Kvp*(Kvs*D2(end,:) - D0(end,:)) - D1(end,:) + Kus*D2(end,:);
 Btu = Atu;
 Bbu = Abu;
 

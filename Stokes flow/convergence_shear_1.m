@@ -36,7 +36,7 @@ dpdx = 0; % Pressure gradient
 Sx = 1; % Shear at the top, could set to 1 (if normalised, always 1)
 
 geometry = 1
-% 1 = triangle (k/s = 1+sqrt(3) for 30deg, 0.5 for 90deg, sqrt(3) for 60deg)
+% 1 = triangle (k/s = 1+sqrt(3)/2 for 30deg, 0.5 for 90deg, sqrt(3)/2 for 60deg)
 % 2 = semi-circle (k/s = 0.5)
 % 3 = trapezium (k/s = 0.5; tip half-angle = 15deg)
 % 4 = blade (k/s = 0.5; t/s = 0.2)

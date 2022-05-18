@@ -12,7 +12,7 @@ tic
 
 %% Input data
 lz = 1; % always
-ly = 0.360610010920238; % always <= height for pressure-driven flow
+ly = sqrt(3)/2; % always <= height for pressure-driven flow
 
 % Define grid sizes
 nz = 101; % number of points in z
@@ -25,12 +25,12 @@ z = (0:nz-1)/(nz-1)*lz;
 dpdx = -1; % Pressure gradient
 Sx = 0; % Shear at the top, could set to 1 (if normalised, always 1)
 
-geometry = 2
-% 1 = triangle (k/s = 1+sqrt(3) for 30deg, 0.5 for 90deg, sqrt(3) for 60deg)
+geometry = 1
+% 1 = triangle (k/s = 1+sqrt(3)/2 for 30deg, 0.5 for 90deg, sqrt(3)/2 for 60deg)
 % 2 = semi-circle (k/s = 0.5)
 % 3 = trapezium (k/s = 0.5; tip half-angle = 15deg)
 % 4 = blade (k/s = 0.5; t/s = 0.2)
-angle = 90; % 30/60/90 degrees, for triangles only
+angle = 60; % 30/60/90 degrees, for triangles only
 
 %% Build S matrix - Grid Points of riblets
 % S = 1 for points within and on boundary and = 0 elsewhere 

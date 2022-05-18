@@ -26,11 +26,11 @@ dpdx = 0; % Pressure gradient
 Sx = 1; % Shear at the top, could set to 1 (if normalised, always 1)
 
 geometry = 1
-% 1 = triangle (k/s = 1+sqrt(3) for 30deg, 0.5 for 90deg, sqrt(3) for 60deg)
+% 1 = triangle (k/s = 1+sqrt(3)/2 for 30deg, 0.5 for 90deg, sqrt(3)/2 for 60deg)
 % 2 = semi-circle (k/s = 0.5)
 % 3 = trapezium (k/s = 0.5; tip half-angle = 15deg)
 % 4 = blade (k/s = 0.5; t/s = 0.2)
-angle = 90; % 30/60/90 degrees, for triangles only
+angle = 60; % 30/60/90 degrees, for triangles only
 
 %% Build S matrix - Grid Points of riblets
 % S = 1 for points within and on boundary and = 0 elsewhere 
