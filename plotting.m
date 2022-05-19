@@ -5,13 +5,13 @@ close all
 nosmod = 256;
 Rt = 550;
 s = [5 7.5 10 12.5 15 17.5 20 30 40 50]';
-shape_0 = 'semi-circle'; % name to appear on plots
+shape_0 = 'blade'; % name to appear on plots
 
 %% Amplification growth rate vs wavelength+
 figure(1)
 hold on
 % Set at tips
-shape = 'circle_s';
+shape = 'blade_s';
 for jK = 1:size(s,1)
     sp = s(jK);
     fname = ['Rt' num2str(Rt) '_' shape '_sp' num2str(sp) '_Ny' num2str(nosmod) '.mat'];
@@ -27,7 +27,7 @@ for jK = 1:size(s,1)
         [(jK-1)*1/(length(s))',0,1-(jK-1)*1/(length(s))],'MarkerSize', 10)
 end
 % Set inside grooves
-shape = 'circle1_s';
+shape = 'blade1_s';
 for jK = 1:size(s,1)
     sp = s(jK);
     fname = ['Rt' num2str(Rt) '_' shape '_sp' num2str(sp) '_Ny' num2str(nosmod) '.mat'];
@@ -58,7 +58,7 @@ box on
 figure(2)
 hold on
 % Set at tips
-shape = 'circle_s';
+shape = 'blade_s';
 for jK = 1:size(s,1)
     sp = s(jK);
     fname = ['Rt' num2str(Rt) '_' shape '_sp' num2str(sp) '_Ny' num2str(nosmod) '.mat'];
@@ -66,7 +66,7 @@ for jK = 1:size(s,1)
     points_1(1,jK) = imag(Most_unstab)/ut/Rt;
 end
 % Set inside grooves
-shape = 'circle1_s';
+shape = 'blade1_s';
 for jK = 1:size(s,1) 
     sp = s(jK);
     fname = ['Rt' num2str(Rt) '_' shape '_sp' num2str(sp) '_Ny' num2str(nosmod) '.mat'];

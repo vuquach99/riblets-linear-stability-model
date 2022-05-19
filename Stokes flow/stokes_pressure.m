@@ -12,7 +12,7 @@ tic
 
 %% Input data
 lz = 1; % always
-ly = sqrt(3)/2; % always <= height for pressure-driven flow
+ly = 0.319099865953775; % always <= height for pressure-driven flow
 
 % Define grid sizes
 nz = 101; % number of points in z
@@ -25,7 +25,7 @@ z = (0:nz-1)/(nz-1)*lz;
 dpdx = -1; % Pressure gradient
 Sx = 0; % Shear at the top, could set to 1 (if normalised, always 1)
 
-geometry = 1
+geometry = 3
 % 1 = triangle (k/s = 1+sqrt(3)/2 for 30deg, 0.5 for 90deg, sqrt(3)/2 for 60deg)
 % 2 = semi-circle (k/s = 0.5)
 % 3 = trapezium (k/s = 0.5; tip half-angle = 15deg)
@@ -76,8 +76,8 @@ end
 if geometry == 3 % trapezium
     shape = 'trapezium';
     height = 0.5;
-    trapezium = (4+2*sqrt(3))*z-3.5-2*sqrt(3);
-    trapezium2 = -(4+2*sqrt(3))*z+0.5;
+    trapezium = (2+sqrt(3))*z-1.5-sqrt(3);
+    trapezium2 = -(2+sqrt(3))*z+0.5;
     for k=1:nz
         for j=1:ny
             if y(j) <= trapezium(k) || y(j) <= trapezium2(k)
@@ -162,11 +162,11 @@ if geometry == 2 % semi-circle
 end
 
 if geometry == 3 % trapezium
-    trapezium = (4+2*sqrt(3))*(z+rd)-3.5-2*sqrt(3);
-    trapezium2 = -(4+2*sqrt(3))*(z-rd)+0.5;
+    trapezium = (2+sqrt(3))*(z+rd)-1.5-sqrt(3);
+    trapezium2 = -(2+sqrt(3))*(z-rd)+0.5;
     zpl = (0:100)/100; % reference
-    ypl1 = (4+2*sqrt(3))*zpl-3.5-2*sqrt(3);
-    ypl2 = -(4+2*sqrt(3))*zpl+0.5;
+    ypl1 = (2+sqrt(3))*zpl-1.5-sqrt(3);
+    ypl2 = -(2+sqrt(3))*zpl+0.5;
     zplot = 1+zpl*(nz-1)/lz;
     yplot1 = 1+ypl1*(ny-1)/ly;
     yplot2 = 1+ypl2*(ny-1)/ly;
@@ -283,12 +283,12 @@ for j=2:ny-1
             
             if geometry == 3 % trapezium
                 if z0 <= lz/2
-                    yp0 = -(4+2*sqrt(3))*z0+0.5;
+                    yp0 = -(2+sqrt(3))*z0+0.5;
                 else
-                    yp0 = (4+2*sqrt(3))*z0-3.5-2*sqrt(3);
+                    yp0 = (2+sqrt(3))*z0-1.5-sqrt(3);
                 end
-                zpPlus = (3.5+2*sqrt(3)+y0)/(4+2*sqrt(3));
-                zpMinus = (0.5-y0)/(4+2*sqrt(3));
+                zpPlus = (1.5+sqrt(3)+y0)/(2+sqrt(3));
+                zpMinus = (0.5-y0)/(2+sqrt(3));
             end
             
             if geometry == 4 % blade
