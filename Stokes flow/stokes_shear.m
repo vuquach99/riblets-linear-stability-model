@@ -25,7 +25,7 @@ z = (0:nz-1)/nz*lz;
 dpdx = 0; % Pressure gradient
 Sx = 1; % Shear at the top, could set to 1 (if normalised, always 1)
 
-geometry = 3
+geometry = 2
 % 1 = triangle (k/s = 1+sqrt(3)/2 for 30deg, 0.5 for 90deg, sqrt(3)/2 for 60deg)
 % 2 = semi-circle (k/s = 0.5)
 % 3 = trapezium (k/s = 0.5; tip half-angle = 15deg)
@@ -455,11 +455,16 @@ fprintf('Virtual boundary at y = %f\n', boundary)
 
 figure(6)
 hold on
-plot(ums,y,'k','Linewidth',1.25)
-plot(ums,y_line,'r','Linewidth',1.25)
-ylabel('$y$','Interpreter','Latex')
-xlabel('$\bar{u}$','Interpreter','Latex')
-set(gca,'FontName','times','FontSize',15)
+plot(ums,y,'Color','b','Linewidth',2)
+plot(ums,y_line,'--r','Linewidth',2)
+yline(boundary,'--','Color','r','Linewidth',2)
+yline(0.5,'--','Color','k','Linewidth',2)
+set(gcf,'position',[160 280 800 600])
+set(gca,'Ylim',[0 0.75])
+set(gca,'Fontn','Times','FontSize',18,'LineWidth',2)
+ylabel('$y$','Interpreter','Latex','FontSize',26)
+xlabel('$\bar{u}$','Interpreter','Latex','FontSize',26)
+box on
 
 % calculate and plot u profile under virtual origin
 n_o = round(boundary/ly*ny); % index of virtual origin
