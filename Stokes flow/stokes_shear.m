@@ -25,12 +25,12 @@ z = (0:nz-1)/nz*lz;
 dpdx = 0; % Pressure gradient
 Sx = 1; % Shear at the top, could set to 1 (if normalised, always 1)
 
-geometry = 2
+geometry = 4
 % 1 = triangle (k/s = 1+sqrt(3)/2 for 30deg, 0.5 for 90deg, sqrt(3)/2 for 60deg)
 % 2 = semi-circle (k/s = 0.5)
 % 3 = trapezium (k/s = 0.5; tip half-angle = 15deg)
 % 4 = blade (k/s = 0.5; t/s = 0.2)
-angle = 60; % 30/60/90 degrees, for triangles only
+angle = 90; % 30/60/90 degrees, for triangles only
 
 %% Build S matrix - Grid Points of riblets
 % S = 1 for points within and on boundary and = 0 elsewhere 
@@ -51,7 +51,7 @@ if geometry == 1 % triangle
     end
     if angle == 30
         shape = 'triangle3';
-        height = (1+sqrt(3))*lz/2;
+        height = 1+sqrt(3)*lz/2;
         triangle = (2+sqrt(3))*z-1-sqrt(3)*lz/2;
         triangle2 = -(2+sqrt(3))*z+1+sqrt(3)*lz/2;
     end
@@ -455,15 +455,15 @@ fprintf('Virtual boundary at y = %f\n', boundary)
 
 figure(6)
 hold on
-plot(ums,y,'Color','b','Linewidth',2)
-plot(ums,y_line,'--r','Linewidth',2)
-yline(boundary,'--','Color','r','Linewidth',2)
-yline(0.5,'--','Color','k','Linewidth',2)
+plot(ums,(y-height)/height,'Color','b','Linewidth',2)
+plot(ums,(y_line-height)/height,'--r','Linewidth',2)
+yline((boundary-height)/height,'--','Color','r','Linewidth',2)
+yline(0,'--','Color','k','Linewidth',2)
 set(gcf,'position',[160 280 800 600])
-set(gca,'Ylim',[0 0.75])
+set(gca,'Ylim',[-1 0.2])
 set(gca,'Fontn','Times','FontSize',18,'LineWidth',2)
-ylabel('$y$','Interpreter','Latex','FontSize',26)
-xlabel('$\bar{u}$','Interpreter','Latex','FontSize',26)
+ylabel('$y^+/k^+$','Interpreter','Latex','FontSize',26)
+xlabel('$\bar{u}_g^+$','Interpreter','Latex','FontSize',26)
 box on
 
 % calculate and plot u profile under virtual origin

@@ -154,10 +154,10 @@ plot(s11/2,points_11,'--vr','LineWidth',2,'MarkerSize',9);
 
 set(gcf,'position',[160 280 800 600])
 set(gca,'Xlim',[0 35])
-set(gca,'Fontn','Times','FontSize',18,'LineWidth',2)
-xlabel('$\ell_g^+$','Interpreter','latex','FontSize',26)
-ylabel('$\sigma_{Im}^+$','Interpreter','latex','FontSize',26)
+set(gca,'Fontn','Times','FontSize',22,'LineWidth',2)
+xlabel('$\ell_g^+$','Interpreter','latex','FontSize',32)
+ylabel('$\sigma_{I\,max}^+$','Interpreter','latex','FontSize',32)
 % legend('semi-circle','blade','triangle3','triangle6','triangle9','trapezium',...
 %     'location','Southeast','FontSize',18)
-title('Maximum amplification vs l_g^+, set at virtual origin')
+% title('Maximum amplification vs l_g^+, set at virtual origin')
 box on

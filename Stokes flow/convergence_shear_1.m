@@ -61,7 +61,7 @@ if geometry == 1 % triangle
     end
     if angle == 30
         shape = 'triangle3';
-        height = (1+sqrt(3))*lz/2;
+        height = 1+sqrt(3)*lz/2;
         triangle = (2+sqrt(3))*z-1-sqrt(3)*lz/2;
         triangle2 = -(2+sqrt(3))*z+1+sqrt(3)*lz/2;
     end

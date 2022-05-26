@@ -21,7 +21,7 @@ F1_hist = [];
 F2_hist = [];
 
 % Define grid sizes
-for n = 10:1:100
+for n = 5:1:200
 n_hist(end+1) = n;
 % Define grid sizes
 nz = n+1 % number of points in z
@@ -60,7 +60,7 @@ if geometry == 1 % triangle
     end
     if angle == 30
         shape = 'triangle3';
-        height = (1+sqrt(3))*lz/2;
+        height = 1+sqrt(3)*lz/2;
         triangle = (2+sqrt(3))*z-1-sqrt(3)*lz/2;
         triangle2 = -(2+sqrt(3))*z+1+sqrt(3)*lz/2;
     end
@@ -409,18 +409,24 @@ F2_hist(end+1) = F2;
 error = (max(u(:))*4-lz^2/4)*100/(lz^2/4); % percentage error
 error_hist(end+1) = error;
 end
-figure(1)
-loglog(n_hist, error_hist)
-ylabel('Percentage error u')
-xlabel('Number or points in y')
+% figure(1)
+% loglog(n_hist, error_hist)
+% ylabel('Percentage error u')
+% xlabel('Number or points in y')
 
 figure(2)
-loglog(n_hist, abs((F1_hist-0.012271846303085)*100/0.012271846303085))
-ylabel('Percentage error F1')
-xlabel('Number or points in y')
+set(gcf,'position',[160 280 800 600])
+loglog(n_hist,abs((F1_hist-0.012271846303085)/0.012271846303085),'LineWidth',4)
+set(gca,'Fontn','Times','FontSize',32,'LineWidth',4)
+ylabel('$err(L^3_{vp})$','Interpreter','latex','FontSize',44)
+xlabel('$ny,nz$','Interpreter','latex','FontSize',44)
+box on
 
 figure(3)
-loglog(n_hist, abs((F2_hist-0.041666666666667)*100/0.041666666666667))
-ylabel('Percentage error F2')
-xlabel('Number or points in y')
+set(gcf,'position',[160 280 800 600])
+loglog(n_hist,abs((F2_hist-0.041666666666667)/0.041666666666667),'LineWidth',4)
+set(gca,'Fontn','Times','FontSize',32,'LineWidth',4)
+ylabel('$err(L^2_{up})$','Interpreter','latex','FontSize',44)
+xlabel('$ny,nz$','Interpreter','latex','FontSize',44)
+box on
 toc

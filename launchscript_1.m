@@ -1,9 +1,10 @@
 % Linear stability analysis over multiple wavelengths
+tic
 clear
 close all
 
 %% Geometry parameters
-s = 50; % riblet spacing s+
+s = 21.27; % riblet spacing s+
 % s = [5 7.5 10 12.5 15 17.5 20 30 40 50]';
 
 shape = 'trapezium1_s';
@@ -17,13 +18,13 @@ F2 = 0.022935819820992
 % F2 = 0.016652818813973
 
 %% Other inputs
-savefile = 1;
+savefile = 0;
 Rt = 550; % friction Reynolds number
 % Sweep through a range of wavelengths
-nosmod = 256; % number of modes
+nosmod = 512; % number of modes
 
 % wavelength parameters (lxp = friction lambda)
-nx = 100; % number of wavelengths
+nx = 200; % number of wavelengths
 lxpmin = 10;
 lxpmax = 10000;
 
@@ -69,3 +70,4 @@ for jK = 1:size(s,1)
             'ut','lxp','maxeigvc','maxeigvl','eigvals')
     end
 end
+toc

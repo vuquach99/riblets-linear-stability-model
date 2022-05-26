@@ -6,8 +6,8 @@
 % G2 scales by s^2 -> Lsq scales by s^1
 
 %% blade riblets: % K-H
-boundary = 0.387330656949723
-shape = 'blade1_s'; l_u = 0.112669343050277;
+boundary = 0.387330656949723; l_u = 0.112669343050277;
+shape = 'blade1_s'
 % at virtual origin
 G1 = 0.010433974752575 % 0.025209123676136
 G2 = 0.065416399751606 % 0.159263409408094
