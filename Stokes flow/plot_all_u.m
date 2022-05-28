@@ -10,42 +10,42 @@ y1 = (y-height)/height;
 k = y1 >= 0;
 k = find(k,1,'first');
 u1 = ums(k);
-plot(ums/u1,(y-height)/height,'-^b','Linewidth',2,'MarkerIndices',1:3:length(y1),'MarkerSize',9)
+plot(ums/u1,(y-height)/height,'-^','Color','#003688','Linewidth',2,'MarkerIndices',1:3:length(y1),'MarkerSize',9)
 
 load('shape_triangle6.mat')
 y1 = (y-height)/height;
 k = y1 >= 0;
 k = find(k,1,'first');
 u1 = ums(k);
-plot(ums/u1,(y-height)/height,'->r','Linewidth',2,'MarkerIndices',1:3:length(y1),'MarkerSize',9)
+plot(ums/u1,(y-height)/height,'->','Color','#9364CD','Linewidth',2,'MarkerIndices',1:3:length(y1),'MarkerSize',9)
 
 load('shape_triangle9.mat')
 y1 = (y-height)/height;
 k = y1 >= 0;
 k = find(k,1,'first');
 u1 = ums(k);
-plot(ums/u1,(y-height)/height,'-vr','Linewidth',2,'MarkerIndices',1:3:length(y1),'MarkerSize',9)
+plot(ums/u1,(y-height)/height,'-v','Color','#E32017','Linewidth',2,'MarkerIndices',1:3:length(y1),'MarkerSize',9)
 
 load('shape_semicircle.mat')
 y1 = (y-height)/height;
 k = y1 >= 0;
 k = find(k,1,'first');
 u1 = ums(k);
-plot(ums/u1,(y-height)/height,'-or','Linewidth',2,'MarkerIndices',1:3:length(y1),'MarkerSize',9)
+plot(ums/u1,(y-height)/height,'-o','Color','#E32017','Linewidth',2,'MarkerIndices',1:3:length(y1),'MarkerSize',9)
 
 load('shape_trapezium.mat')
 y1 = (y-height)/height;
 k = y1 >= 0;
 k = find(k,1,'first');
 u1 = ums(k);
-plot(ums/u1,(y-height)/height,'-dr','Linewidth',2,'MarkerIndices',1:3:length(y1),'MarkerSize',9)
+plot(ums/u1,(y-height)/height,'-d','Color','#9364CD','Linewidth',2,'MarkerIndices',1:3:length(y1),'MarkerSize',9)
 
 load('shape_blade.mat')
 y1 = (y-height)/height;
 k = y1 >= 0;
 k = find(k,1,'first');
 u1 = ums(k);
-plot(ums/u1,(y-height)/height,'-+b','Linewidth',2,'MarkerIndices',1:3:length(y1),'MarkerSize',9)
+plot(ums/u1,(y-height)/height,'-+','Color','#003688','Linewidth',2,'MarkerIndices',1:3:length(y1),'MarkerSize',9)
 
 yline(0,'--','Color','k','Linewidth',2)
 set(gcf,'position',[160 280 800 600])

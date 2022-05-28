@@ -138,18 +138,18 @@ for jK = 1:size(s12,1)
     points_12(1,jK) = imag(Most_unstab)/ut/Rt;
 end
 
-plot(s1*sqrt(pi/8),points_1,'-or','LineWidth',2,'MarkerSize',9);
-plot(s2*sqrt(2/5),points_2,'-+b','LineWidth',2,'MarkerSize',9);
-plot(s3*sqrt(0.5 + sqrt(3)/4),points_3,'-^b','LineWidth',2,'MarkerSize',9);
+plot(s1*sqrt(pi/8),points_1,'-o','Color','#E32017','LineWidth',2,'MarkerSize',9);
+plot(s2*sqrt(2/5),points_2,'-+','Color','#003688','LineWidth',2,'MarkerSize',9);
+plot(s3*sqrt(0.5 + sqrt(3)/4),points_3,'-^','Color','#003688','LineWidth',2,'MarkerSize',9);
 % plot(s4*sqrt(sqrt(3))/2,points_4,'-o','LineWidth',2,'Color','r');
-plot(s5/2,points_5,'-vr','LineWidth',2,'MarkerSize',9);
+plot(s5/2,points_5,'-v','Color','#E32017','LineWidth',2,'MarkerSize',9);
 % plot(s6*sqrt(sqrt(3))/2,points_6,'-o','LineWidth',2,'Color','r');
 
-plot(s7*sqrt(pi/8),points_7,'--or','LineWidth',2,'MarkerSize',9);
-plot(s8*sqrt(2/5),points_8,'--+b','LineWidth',2,'MarkerSize',9);
-plot(s9*sqrt(0.5 + sqrt(3)/4),points_9,'--^b','LineWidth',2,'MarkerSize',9);
+plot(s7*sqrt(pi/8),points_7,'--o','Color','#E32017','LineWidth',2,'MarkerSize',9);
+plot(s8*sqrt(2/5),points_8,'--+','Color','#003688','LineWidth',2,'MarkerSize',9);
+plot(s9*sqrt(0.5 + sqrt(3)/4),points_9,'--^','Color','#003688','LineWidth',2,'MarkerSize',9);
 % plot(s10*sqrt(sqrt(3))/2,points_10,'--x','LineWidth',2,'Color','r');
-plot(s11/2,points_11,'--vr','LineWidth',2,'MarkerSize',9);
+plot(s11/2,points_11,'--v','Color','#E32017','LineWidth',2,'MarkerSize',9);
 % plot(s12*sqrt(sqrt(3))/2,points_12,'--x','LineWidth',2,'Color','r');
 
 set(gcf,'position',[160 280 800 600])

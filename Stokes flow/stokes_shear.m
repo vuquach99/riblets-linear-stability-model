@@ -453,10 +453,15 @@ boundary = y(minimum)-grad_min*ums(minimum);
 y_line = grad_min*ums + boundary;
 fprintf('Virtual boundary at y = %f\n', boundary)
 
+y1 = (y-height)/height;
+k = y1 >= 0;
+k = find(k,1,'first');
+u1 = ums(k);
+
 figure(6)
 hold on
-plot(ums,(y-height)/height,'Color','b','Linewidth',2)
-plot(ums,(y_line-height)/height,'--r','Linewidth',2)
+plot(ums/u1,(y-height)/height,'Color','b','Linewidth',2)
+plot(ums/u1,(y_line-height)/height,'--r','Linewidth',2)
 yline((boundary-height)/height,'--','Color','r','Linewidth',2)
 yline(0,'--','Color','k','Linewidth',2)
 set(gcf,'position',[160 280 800 600])
