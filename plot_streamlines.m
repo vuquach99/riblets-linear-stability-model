@@ -2,14 +2,14 @@
 clear
 close all
 
-nosmod = 256;
+nosmod = 512;
 Rt = 550;
-s = 20;
-shape = 'circle';
+s = 30;
+shape = 'circle1_s';
 
 [D0,D1,D2,D3,D4] = dmat(nosmod);
 
-ymax = [200 100 85 55 40 40 25];
+ymax = [500 100 85 55 40 40 25];
 ii = 1;
 figure(5)
 hold on
@@ -19,15 +19,15 @@ for jK = 1:length(s)
     fname = ['Rt' num2str(Rt) '_' shape '_sp' num2str(sp) '_Ny' num2str(nosmod) '.mat']
     load(fname)
     for ia=1:length(lxp)
-        maxeig(ia)=max(imag(eigvals(:,ia)));
+        maxeig(ia)=Max_unstab(ia)
     end
-    [Amax,i]=max(maxeig);
-    lxpi=lxp(i)
+    [~,i]=max(maxeig);
+    lxpi = Most_lxp;
     alp=2*pi*Rt/lxpi;
     maxeigvc=maxeigvc(:,i);
 
     Nos = size(maxeigvc,1);
-    x=2*lxpi/Rt*[0:200]'/200;
+    x = 2*lxpi/Rt*[0:200]'/200; % creates x
     yy=Rt*(y+1);
     evx=exp(1i*alp*x');
     x=Rt*x;
@@ -37,7 +37,7 @@ for jK = 1:length(s)
     vvv=real(vvv*evx);
     phi=1i*D0*maxeigvc/alp;
     phi=real(phi*evx);
-    x=x-49.7;%x=x-x(jj(ii));
+%     x=x-49.7;%x=x-x(jj(ii));
     uuu=uuu(yy<ymax(ii),:);
     vvv=vvv(yy<ymax(ii),:);
     phi=phi(yy<ymax(ii),:);
@@ -47,12 +47,12 @@ for jK = 1:length(s)
         [.2:.2:  1],    '-b',   'LineW',2)
     contour(     x(1:2:end),yy(1:2:end),phi(1:2:end,1:2:end) /max(phi(:)), ...
         [-1:.2:-.2],    '-r',   'LineW',2)
+     axis equal
     set(gca,'Xlim',[0 lxpi])
-    set(gca,'Ylim',[0 .3582*lxpi])
+    set(gca,'Ylim',[0 15])
 end
 
-set(gca,'Fontn','Times','FontSize',24,'linew',2)
+set(gca,'Fontn','Times','FontSize',34,'linew',2)
 xlabel('x^+','FontAngle','italic');
 ylabel('y^+','FontAngle','italic');
-axis equal
 box on

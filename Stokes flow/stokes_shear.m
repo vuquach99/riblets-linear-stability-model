@@ -12,11 +12,11 @@ tic
 
 %% Input data
 lz = 1; % always
-ly = 2; % always > height for periodic flow
+ly = 2; % always > height for periodic flow - typically = 2 to avoid smearing out profiles
 
 % Define grid sizes
 nz = 100; % number of points in periodic z (spanwise)
-ny = 101; % number of points y (wall-normal) domain is enclosed
+ny = 101; % number of points in y (wall-normal) domain is enclosed
 dy = ly/(ny-1); % length of sub-intervals in y-axis
 dz = lz/nz; % length of sub-intervals in z-axis
 y = (0:ny-1)/(ny-1)*ly;
@@ -449,7 +449,7 @@ for i = 1:ny-1
 end
 grad(ny) = grad(ny-1);
 [grad_min, minimum] = min(grad);
-boundary = y(minimum)-grad_min*ums(minimum);
+boundary = y(minimum)-grad_min*ums(minimum); % = height - l_U
 y_line = grad_min*ums + boundary;
 fprintf('Virtual boundary at y = %f\n', boundary)
 

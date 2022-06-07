@@ -1,4 +1,4 @@
-% Plotting script
+% Plots growth rate vs wavelength
 clear
 close all
 

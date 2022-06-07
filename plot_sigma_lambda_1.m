@@ -1,4 +1,4 @@
-% Compare with inviscid code
+% Compares with inviscid code
 clear
 close all
 
@@ -26,8 +26,8 @@ for jK = 1:size(s,1)
 %     plot(Most_lxp,most_unstab,'o','LineWidth', 2,'Color',...
 %         [(jK-1)*1/(length(s))',0,1-(jK-1)*1/(length(s))],'MarkerSize', 10)
 end
-% Set inside grooves
-shape = 'circle_s';
+% Viscous, set at tips
+shape = 'circle1_s';
 for jK = 1:size(s,1)
     sp = s(jK);
     fname = ['Rt' num2str(Rt) '_' shape '_sp' num2str(sp) '_Ny' num2str(nosmod) '.mat'];
@@ -47,9 +47,9 @@ yline(0,'--','LineWidth',2)
 set(gcf,'position',[160 280 800 600])
 set(gca,'Xlim',[10 6000])
 set(gca,'Ylim',[0 0.2])
-set(gca,'Fontn','Times','FontSize',22,'LineWidth',2)
-xlabel('$\lambda_x^+$','Interpreter','latex','FontSize',32)
-ylabel('$\sigma_I^+$','Interpreter','latex','FontSize',32)
+set(gca,'Fontn','Times','FontSize',30,'LineWidth',2)
+xlabel('$\lambda_x^+$','Interpreter','latex','FontSize',38)
+ylabel('$\sigma_I^+$','Interpreter','latex','FontSize',38)
 % legend(h([1,2]),{'Set at tips','Set inside grooves'},'location','Southeast','FontSize',18)
 % title(sprintf('Amplification vs Wavelength, %s', shape_0))
 box on

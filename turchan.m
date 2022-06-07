@@ -1,5 +1,4 @@
 function d = turchan(alp,D0,D1,D2,D3,D4,U,nut,Kvp,Kup,Kvs,Kus)
-
 % Creates Orr-Sommerfeld matrices.
 % Uses Chebyshev pseudospectral discretisation for channel flow.
 

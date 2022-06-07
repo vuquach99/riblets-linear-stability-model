@@ -1,3 +1,5 @@
+% Plots examples of inflectional & non-inflectional profiles
+% Unrelated to linear stability code
 clear
 close all
 

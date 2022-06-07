@@ -119,7 +119,7 @@ for jK = 1:size(s10,1)
 end
 
 % Triangle9
-s11 = [5 7.5 10 12.5 15 17.5 20 30 40 50 60 70 100]';
+s11 = [5 7.5 10 12.5 15 17.5 20 22 24 30 40 50 60 70 100]';
 shape = 'triangle9_s';
 for jK = 1:size(s11,1) 
     sp = s11(jK);
@@ -138,25 +138,25 @@ for jK = 1:size(s12,1)
     points_12(1,jK) = imag(Most_unstab)/ut/Rt;
 end
 
-plot(s1*sqrt(pi/8),points_1,'-o','Color','#E32017','LineWidth',2,'MarkerSize',9);
-plot(s2*sqrt(2/5),points_2,'-+','Color','#003688','LineWidth',2,'MarkerSize',9);
-plot(s3*sqrt(0.5 + sqrt(3)/4),points_3,'-^','Color','#003688','LineWidth',2,'MarkerSize',9);
-% plot(s4*sqrt(sqrt(3))/2,points_4,'-o','LineWidth',2,'Color','r');
+% plot(s1*sqrt(pi/8),points_1,'-o','Color','#E32017','LineWidth',2,'MarkerSize',9);
+% plot(s2*sqrt(2/5),points_2,'-+','Color','#003688','LineWidth',2,'MarkerSize',9);
+% plot(s3*sqrt(0.5 + sqrt(3)/4),points_3,'-^','Color','#003688','LineWidth',2,'MarkerSize',9);
+plot(s4*sqrt(sqrt(3))/2,points_4,'->','LineWidth',2,'Color','#9364CD');
 plot(s5/2,points_5,'-v','Color','#E32017','LineWidth',2,'MarkerSize',9);
-% plot(s6*sqrt(sqrt(3))/2,points_6,'-o','LineWidth',2,'Color','r');
+plot(s6*sqrt(sqrt(3))/2,points_6,'-d','LineWidth',2,'Color','#9364CD');
 
-plot(s7*sqrt(pi/8),points_7,'--o','Color','#E32017','LineWidth',2,'MarkerSize',9);
-plot(s8*sqrt(2/5),points_8,'--+','Color','#003688','LineWidth',2,'MarkerSize',9);
-plot(s9*sqrt(0.5 + sqrt(3)/4),points_9,'--^','Color','#003688','LineWidth',2,'MarkerSize',9);
-% plot(s10*sqrt(sqrt(3))/2,points_10,'--x','LineWidth',2,'Color','r');
+% plot(s7*sqrt(pi/8),points_7,'--o','Color','#E32017','LineWidth',2,'MarkerSize',9);
+% plot(s8*sqrt(2/5),points_8,'--+','Color','#003688','LineWidth',2,'MarkerSize',9);
+% plot(s9*sqrt(0.5 + sqrt(3)/4),points_9,'--^','Color','#003688','LineWidth',2,'MarkerSize',9);
+plot(s10*sqrt(sqrt(3))/2,points_10,'-->','LineWidth',2,'Color','#9364CD');
 plot(s11/2,points_11,'--v','Color','#E32017','LineWidth',2,'MarkerSize',9);
-% plot(s12*sqrt(sqrt(3))/2,points_12,'--x','LineWidth',2,'Color','r');
+plot(s12*sqrt(sqrt(3))/2,points_12,'--d','LineWidth',2,'Color','#9364CD');
 
 set(gcf,'position',[160 280 800 600])
 set(gca,'Xlim',[0 35])
-set(gca,'Fontn','Times','FontSize',22,'LineWidth',2)
-xlabel('$\ell_g^+$','Interpreter','latex','FontSize',32)
-ylabel('$\sigma_{I\,max}^+$','Interpreter','latex','FontSize',32)
+set(gca,'Fontn','Times','FontSize',30,'LineWidth',2)
+xlabel('$\ell_g^+$','Interpreter','latex','FontSize',38)
+ylabel('$\sigma_{I\,max}^+$','Interpreter','latex','FontSize',38)
 % legend('semi-circle','blade','triangle3','triangle6','triangle9','trapezium',...
 %     'location','Southeast','FontSize',18)
 % title('Maximum amplification vs l_g^+, set at virtual origin')

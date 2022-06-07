@@ -1,12 +1,18 @@
-%% scaling
-% boundary scales by s
+% Data from Stokes solver
+
+%% naming convention used throughout this project:
+% geometry = flow without shear, boundary at the tips
+% geometry_s = flow with shear, boundary at the tips
+% gemoetry1_s = flow with shear, boundary at l_U
+
+%% boundary scales by s
 % F1 scales by s^4 -> Lwp^3 scales by s^3
 % F2 scales by s^3 -> Lsp^2 scales by s^2
 % G1 scales by s^3 -> Lhq^2 scales by s^2
 % G2 scales by s^2 -> Lsq scales by s^1
 
 %% blade riblets: % K-H
-boundary = 0.387330656949723; l_u = 0.112669343050277;
+boundary = 0.387330656949723; l_U = 0.112669343050277;
 shape = 'blade1_s'
 % at virtual origin
 G1 = 0.010433974752575 % 0.025209123676136
@@ -22,7 +28,7 @@ F1 = 0.010978986273215
 F2 = 0.031028741771087
 
 %% triangle3: % K-H
-boundary = 1.671856886049669; l_u = 0.194168517734770;
+boundary = 1.671856886049669; l_U = 0.194168517734770;
 shape = 'triangle31_s';
 % at virtual origin
 G1 = 0.015084097564436;
@@ -38,7 +44,7 @@ F1 = 0.033784639177106;
 F2 = 0.054086959425172;
 
 %% triangle6: % no K-H
-boundary = 0.700496601689868; l_u = 0.165528802094570;
+boundary = 0.700496601689868; l_U = 0.165528802094570;
 shape = 'triangle61_s';
 % at virtual origin
 G1 = 0.008102806094307;
@@ -54,7 +60,7 @@ F1 = 0.011660154285430;
 F2 = 0.034851242843017;
 
 %% triangle9: % no K-H
-boundary = 0.360610010920238; l_u = 0.139389989079762;
+boundary = 0.360610010920238; l_U = 0.139389989079762;
 shape = 'triangle91_s';
 % at virtual origin
 G1 = 0.003949022521047 % 0.004164840339804
@@ -70,7 +76,7 @@ F1 = 0.004375166437791
 F2 = 0.020677338242424
 
 %% trapezium % no K-H
-boundary = 0.319099865953775; l_u = 0.180900134046225;
+boundary = 0.319099865953775; l_U = 0.180900134046225;
 shape = 'trapezium1_s';
 % at virtual origin
 G1 = 0.009516234685273
@@ -86,7 +92,7 @@ F1 = 0.013964388343612
 F2 = 0.043022781912912
 
 %% semi-circle
-boundary = 0.297759511160163; l_u = 0.202240488839837;
+boundary = 0.297759511160163; l_U = 0.202240488839837;
 shape = 'circle1_s';
 % at virtual origin
 G1 = 0.008056486729527 % 0.016764297863788 
