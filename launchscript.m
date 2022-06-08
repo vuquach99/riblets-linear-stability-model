@@ -1,6 +1,4 @@
 % Linear stability analysis
-% WARNING - WRONG RESULTS when s is in the form of an array - unresolved
-% For now, run at individual s values
 tic
 clear
 close all
@@ -60,7 +58,7 @@ for jK = 1:size(s,1)
     Kup = (Lupp/Rt)^2; % streamwise coefficients in outer units squared
     % Shear-driven coefficients
     Kvs = (Lvs(jK)/Rt)^2; % Lvs
-    Kus = Lus/Rt; % Lus
+    Kus = Lus(jK)/Rt; % Lus
     % Calculates stuff
     fname = ['Rt' num2str(Rt) '_' shape '_sp' num2str(sp) '_Ny' num2str(nosmod) '.mat']
     ribstab

@@ -8,7 +8,6 @@ s = [5 10 15 20 30 40 50]'; % riblet spacing s+
 Rt = 550; % friction Reynolds number
 nosmod = 256; % number of modes
 
-
 %% Main loop, plots Orr-Sommerfeld spectrum
 omega_imag = zeros(nosmod+1,size(s,1));
 omega_real = zeros(nosmod+1,size(s,1));
@@ -17,7 +16,7 @@ most_real = [];
 figure
 hold on
 
-%% first shape
+%% First shape
 shape = 'circle';
 fname = ['Rt' num2str(Rt) '_' shape '_sp' num2str(40) '_Ny' num2str(nosmod) '.mat'];
 load(fname)
@@ -33,7 +32,7 @@ for jK = 1:size(s,1)
         'Color',[(jK-1)*1/(length(s))',0,1-(jK-1)*1/(length(s))],'MarkerSize',14)
 end
 
-%% second shape
+%% Second shape
 % shape = 'circle_s';
 % fname = ['Rt' num2str(Rt) '_' shape '_sp' num2str(40) '_Ny' num2str(nosmod) '.mat'];
 % load(fname)
@@ -49,7 +48,7 @@ end
 %         'Color',[(jK-1)*1/(length(s))',0,1-(jK-1)*1/(length(s))],'MarkerSize',14)
 % end
 
-%% parameters
+%% Parameters
 set(gcf,'position',[160 280 800 600])
 set(gca,'Xlim',[-0.5 2.5])
 set(gca,'Ylim',[-2 0.5])
